@@ -4,146 +4,272 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Earth Trend Detective | NASA Space Apps</title>
-
-<script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+<title>Earth Trend Detective | NASA Space Apps 2026</title>
 
 <style>
+:root {
+  --bg: #060914;
+  --panel: #11172b;
+  --border: #51477980;
+  --purple: #ae98ff;
+  --cyan: #51d9ef;
+  --muted: #9daac4;
+  --white: #f3f5ff;
+}
+
 * { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  color: #f5f7ff;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--white);
   background:
-    radial-gradient(ellipse at 50% 10%, #252050 0%, transparent 45%),
-    radial-gradient(ellipse at 90% 70%, #111b39 0%, transparent 50%),
-    #060914;
+    radial-gradient(ellipse at 50% 0%, #28204b 0%, transparent 45%),
+    radial-gradient(ellipse at 95% 55%, #14203a 0%, transparent 45%),
+    var(--bg);
   min-height: 100vh;
 }
 
 nav {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 22px 6%;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 23px 6%;
   border-bottom: 1px solid #ffffff16;
 }
 
 .brand {
-  font-weight: bold;
+  font-weight: 800;
   letter-spacing: 2px;
-  color: #d4c6ff;
+  color: #d5c7ff;
 }
 
-.tag {
-  font-size: 12px;
-  color: #b8abc9;
+.tag, .status {
   border: 1px solid #71609c;
   border-radius: 30px;
-  padding: 9px 14px;
+  color: #c6b5ff;
+  padding: 9px 13px;
+  font-size: 11px;
+  letter-spacing: 1px;
 }
 
 header {
   text-align: center;
-  padding: 65px 20px 30px;
+  padding: 65px 20px 35px;
 }
 
 .eyebrow {
-  color: #ae99ff;
-  letter-spacing: 4px;
+  color: var(--purple);
   font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
 }
 
 h1 {
-  font-size: clamp(34px, 5vw, 64px);
-  letter-spacing: 2px;
+  font-size: clamp(35px, 5.5vw, 65px);
+  letter-spacing: 1px;
   margin: 18px 0;
 }
 
-h1 span {
-  color: #ad9bff;
-}
+h1 span { color: var(--purple); }
 
 .subtitle {
-  color: #a8b4cc;
+  color: var(--muted);
   line-height: 1.8;
+  font-size: 15px;
 }
 
-.comparison {
-  max-width: 1250px;
-  margin: 35px auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+.section {
+  max-width: 1240px;
   padding: 0 24px;
+  margin: 35px auto;
 }
 
 .panel {
-  position: relative;
+  background: linear-gradient(145deg, #161a32, #0b1022);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 25px;
   min-width: 0;
-  overflow: hidden;
-  border: 1px solid #7260ad55;
-  border-radius: 24px;
-  background: linear-gradient(145deg, #13172cdd, #0a1022dd);
-  box-shadow: 0 15px 45px #00000040;
+  box-shadow: 0 14px 45px #00000035;
 }
 
-.panel-header {
-  padding: 25px 28px 0;
+.section-title {
+  margin: 8px 0 15px;
+  font-size: 25px;
+}
+
+.controls-heading {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
-.panel-title {
-  font-size: 19px;
-  font-weight: bold;
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 25px;
 }
 
-.indicator {
-  color: #a999fb;
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #b8bfd5;
+  font-size: 13px;
+}
+
+select {
+  width: 100%;
+  background: #151b31;
+  color: white;
+  border: 1px solid #655c87;
+  padding: 13px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+select:focus, input:focus {
+  outline: 2px solid var(--purple);
+}
+
+.hint {
+  color: var(--muted);
   font-size: 12px;
+  line-height: 1.7;
+}
+
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.planet-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.planet-heading {
+  padding: 25px 25px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.planet-heading h2 {
+  font-size: 19px;
+  margin: 0;
 }
 
 .globe {
   width: 100%;
-  height: 390px;
+  height: 370px;
   cursor: grab;
 }
 
 .globe:active { cursor: grabbing; }
 
-.panel-footer {
+.planet-footer {
+  padding: 0 25px 25px;
   text-align: center;
-  padding: 0 25px 28px;
 }
 
-select {
-  width: 85%;
-  padding: 13px 15px;
-  border: 1px solid #625985;
-  border-radius: 10px;
-  background: #151b31;
-  color: white;
-  font-size: 15px;
+.planet-footer .hint { margin-bottom: 0; }
+
+.timeline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.hint {
-  color: #858da7;
-  font-size: 12px;
-  margin-top: 15px;
+.year-display {
+  color: var(--purple);
+  font-size: 26px;
+  font-weight: bold;
 }
 
-.section {
-  max-width: 1200px;
-  margin: 35px auto;
-  padding: 0 24px;
+input[type="range"] {
+  width: 100%;
+  margin: 28px 0 15px;
+  accent-color: var(--purple);
+  cursor: pointer;
 }
 
-.section h2 {
-  font-size: 25px;
+input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
+
+.chart-area {
+  position: relative;
+  height: 350px;
+  margin-top: 28px;
+  background:
+    linear-gradient(#ffffff08 1px, transparent 1px),
+    #0b1123;
+  background-size: 100% 55px;
+  border: 1px solid #ffffff14;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+#trendChart {
+  display: none;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 25px;
+}
+
+.placeholder-symbol {
+  font-size: 52px;
+  color: var(--purple);
+}
+
+.placeholder h3 { margin-bottom: 0; }
+
+.placeholder p {
+  max-width: 430px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.legend {
+  display: flex;
+  gap: 25px;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 7px;
+}
+
+.purple { background: var(--purple); }
+.cyan { background: var(--cyan); }
 
 .stats {
   display: grid;
@@ -152,57 +278,67 @@ select {
 }
 
 .stat {
+  background: var(--panel);
   border: 1px solid #ffffff18;
-  border-radius: 16px;
+  border-radius: 17px;
   padding: 25px;
-  background: #111729;
 }
 
 .stat-label {
-  font-size: 13px;
-  color: #a2aac4;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 1px;
 }
 
 .stat-value {
-  margin-top: 20px;
-  font-size: 20px;
+  color: var(--purple);
+  font-size: 21px;
   font-weight: bold;
-  color: #baaaff;
+  margin-top: 20px;
 }
 
 .note {
-  padding: 20px;
-  margin: 30px 0 60px;
-  border-left: 3px solid #a18cff;
+  padding: 21px;
   background: #151a30;
-  color: #b3bdd2;
-  line-height: 1.7;
+  border-left: 3px solid var(--purple);
+  color: #b4bfd4;
+  line-height: 1.8;
+  border-radius: 0 10px 10px 0;
+  margin-top: 25px;
 }
 
 footer {
+  border-top: 1px solid #ffffff12;
+  margin-top: 70px;
   padding: 30px;
   text-align: center;
-  color: #68718b;
+  color: #77819b;
   font-size: 12px;
 }
 
 @media (max-width: 750px) {
-  .comparison { grid-template-columns: 1fr; }
-  .stats { grid-template-columns: 1fr; }
+  .comparison, .controls-grid, .stats {
+    grid-template-columns: 1fr;
+  }
+
   .globe { height: 320px; }
-  nav { gap: 15px; }
+  nav { padding: 20px; }
+  .panel { padding: 18px; }
+  .planet-panel { padding: 0; }
+  .chart-area { height: 310px; }
 }
 </style>
 </head>
 
 <body>
+
 <nav>
   <div class="brand">✦ EARTH / DETECTIVE</div>
   <div class="tag">NASA SPACE APPS 2026</div>
 </nav>
 
 <header>
-  <div class="eyebrow">EARTH INTELLIGENCE PLATFORM</div>
+  <div class="eyebrow">Earth Intelligence Platform</div>
   <h1>Explore. Compare. <span>Predict.</span></h1>
   <p class="subtitle">
     Discover how our planet changes over time.<br>
@@ -211,428 +347,312 @@ footer {
 </header>
 
 <main>
-  <section class="section" id="environment-controls">
-  <div class="controls-panel">
+
+<!-- ENVIRONMENTAL CONTROLS -->
+
+<section class="section" id="environment-controls">
+  <div class="panel">
+
     <div class="controls-heading">
       <div>
-        <div class="eyebrow">DATA EXPLORER</div>
-        <h2>Environmental Controls</h2>
+        <div class="eyebrow">Data Explorer</div>
+        <h2 class="section-title">Environmental Controls</h2>
       </div>
-      <span class="data-status">● AWAITING NASA DATA</span>
+      <span class="status" id="data-status">AWAITING NASA DATA</span>
     </div>
 
     <div class="controls-grid">
-      <label class="control-field">
+
+      <label class="field">
         Environmental Variable
-        <select id="environment-variable">
+        <select id="variable">
           <option value="temperature">Temperature (°C)</option>
           <option value="precipitation">Precipitation (mm)</option>
           <option value="humidity">Relative Humidity (%)</option>
         </select>
       </label>
 
-      <label class="control-field">
+      <label class="field">
         Start Year
-        <select id="start-year">
+        <select id="startYear" disabled>
           <option value="">Awaiting dataset</option>
         </select>
       </label>
 
-      <label class="control-field">
+      <label class="field">
         End Year
-        <select id="end-year">
+        <select id="endYear" disabled>
           <option value="">Awaiting dataset</option>
         </select>
       </label>
+
     </div>
 
-    <p id="controls-message">
-      Select an environmental variable. Available years will
-      appear automatically when historical data is connected.
+    <p class="hint" id="controls-message" aria-live="polite">
+      Historical measurements will become available after
+      a verified dataset is connected.
+    </p>
+
+  </div>
+</section>
+
+<!-- INTERACTIVE EARTH GLOBES -->
+
+<section class="section comparison">
+
+  <article class="panel planet-panel">
+    <div class="planet-heading">
+      <h2>Region 01</h2>
+      <span class="eyebrow">3D Earth</span>
+    </div>
+
+    <div id="globe1" class="globe"></div>
+
+    <div class="planet-footer">
+      <select id="region1">
+        <option value="riyadh">Riyadh, Saudi Arabia</option>
+        <option value="new_york">New York, USA</option>
+        <option value="tokyo">Tokyo, Japan</option>
+        <option value="london">London, UK</option>
+        <option value="sydney">Sydney, Australia</option>
+      </select>
+      <p class="hint">Drag to rotate · Scroll to zoom</p>
+    </div>
+  </article>
+
+  <article class="panel planet-panel">
+    <div class="planet-heading">
+      <h2>Region 02</h2>
+      <span class="eyebrow">3D Earth</span>
+    </div>
+
+    <div id="globe2" class="globe"></div>
+
+    <div class="planet-footer">
+      <select id="region2">
+        <option value="riyadh">Riyadh, Saudi Arabia</option>
+        <option value="new_york" selected>New York, USA</option>
+        <option value="tokyo">Tokyo, Japan</option>
+        <option value="london">London, UK</option>
+        <option value="sydney">Sydney, Australia</option>
+      </select>
+      <p class="hint">Drag to rotate · Scroll to zoom</p>
+    </div>
+  </article>
+
+</section>
+
+<!-- HISTORICAL TIMELINE -->
+
+<section class="section">
+  <div class="panel">
+    <div class="eyebrow">Time Exploration</div>
+    <h2 class="section-title">Historical Timeline</h2>
+
+    <div class="timeline-row">
+      <p class="subtitle">
+        Explore environmental change across time.
+      </p>
+      <div class="year-display" id="selectedYear">—</div>
+    </div>
+
+    <input
+      type="range"
+      id="timeline"
+      min="0"
+      max="1"
+      value="0"
+      disabled
+      aria-label="Historical year">
+
+    <div class="timeline-row hint">
+      <span id="timelineStart">Dataset start</span>
+      <span id="timelineEnd">Dataset end</span>
+    </div>
+
+    <p class="hint" id="timelineMessage">
+      The timeline will activate when historical data is available.
     </p>
   </div>
 </section>
 
-<style>
-  .controls-panel {
-    padding: 28px;
-    border-radius: 22px;
-    border: 1px solid #8d79d04d;
-    background: linear-gradient(135deg, #161a32, #0c1024);
-    box-shadow: 0 12px 35px #00000030;
-  }
+<!-- TREND CHART -->
 
-  .controls-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 22px;
-  }
+<section class="section">
+  <div class="panel">
 
-  .controls-heading h2 {
-    margin: 10px 0 0;
-  }
-
-  .data-status {
-    color: #b7a6ff;
-    font-size: 12px;
-    letter-spacing: 1px;
-  }
-
-  .controls-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
-  }
-
-  .control-field {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    font-size: 13px;
-    color: #b9bed4;
-  }
-
-  .control-field select {
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    border: 1px solid #625985;
-    background: #11172d;
-    color: white;
-    font-size: 14px;
-  }
-
-  #controls-message {
-    margin: 22px 0 0;
-    font-size: 13px;
-    color: #949fbc;
-    line-height: 1.6;
-  }
-
-  @media (max-width: 750px) {
-    .controls-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
-
-<script>
-<section class="comparison">
-
-  <article class="panel">
-    <div class="panel-header">
-      <div class="panel-title">Region 01</div>
-      <div class="indicator">● 3D EARTH</div>
-    </div>
-    <div id="globe1" class="globe"></div>
-    <div class="panel-footer">
-      <select id="region1">
-        <option value="24.7,46.7">Riyadh, Saudi Arabia</option>
-        <option value="40.7,-74">New York, USA</option>
-        <option value="35.7,139.7">Tokyo, Japan</option>
-        <option value="51.5,-0.1">London, UK</option>
-        <option value="-33.9,151.2">Sydney, Australia</option>
-      </select>
-      <div class="hint">Drag to rotate · Scroll to zoom</div>
-    </div>
-  </article>
-
-  <article class="panel">
-    <div class="panel-header">
-      <div class="panel-title">Region 02</div>
-      <div class="indicator">● 3D EARTH</div>
-    </div>
-    <div id="globe2" class="globe"></div>
-    <div class="panel-footer">
-      <select id="region2">
-        <option value="24.7,46.7">Riyadh, Saudi Arabia</option>
-        <option value="40.7,-74" selected>New York, USA</option>
-        <option value="35.7,139.7">Tokyo, Japan</option>
-        <option value="51.5,-0.1">London, UK</option>
-        <option value="-33.9,151.2">Sydney, Australia</option>
-      </select>
-      <div class="hint">Drag to rotate · Scroll to zoom</div>
-    </div>
-  </article>
-
-</section>
-
-<section class="section" id="trend-charts">
-  <div class="chart-panel">
-    <div class="chart-heading">
+    <div class="controls-heading">
       <div>
-        <div class="eyebrow">HISTORICAL ANALYSIS</div>
-        <h2>Environmental Trend Comparison</h2>
-        <p class="subtitle">
-          Compare environmental changes between two regions over time.
-        </p>
+        <div class="eyebrow">Historical Analysis</div>
+        <h2 class="section-title">
+          Environmental Trend Comparison
+        </h2>
       </div>
-      <span class="chart-status">AWAITING DATA</span>
+      <span class="status" id="chart-status">AWAITING DATA</span>
     </div>
 
-    <div class="chart-container">
-      <canvas id="environment-chart"></canvas>
-      <div id="chart-placeholder">
-        <div class="placeholder-icon">⌁</div>
+    <p class="subtitle">
+      Compare environmental changes between two regions over time.
+    </p>
+
+    <div class="chart-area">
+      <canvas id="trendChart"></canvas>
+
+      <div class="placeholder" id="chart-placeholder">
+        <div class="placeholder-symbol">⌁</div>
         <h3>Ready for Earth Observation Data</h3>
         <p>
-          Historical trends will appear here once
-          verified NASA datasets are connected.
+          Verified historical trends will appear here
+          after NASA datasets are connected.
         </p>
       </div>
     </div>
 
-    <div class="chart-legend">
-      <span><i class="legend-dot region-a"></i> Region 01</span>
-      <span><i class="legend-dot region-b"></i> Region 02</span>
+    <div class="legend">
+      <span><i class="dot purple"></i>Region 01</span>
+      <span><i class="dot cyan"></i>Region 02</span>
     </div>
+
   </div>
 </section>
 
-<style>
-  .chart-panel {
-    padding: 30px;
-    border: 1px solid #7763b755;
-    border-radius: 22px;
-    background: linear-gradient(145deg, #11172b, #0a1021);
-    box-shadow: 0 15px 40px #00000030;
-  }
-
-  .chart-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .chart-status {
-    color: #b4a3ff;
-    font-size: 12px;
-    letter-spacing: 1px;
-  }
-
-  .chart-container {
-    position: relative;
-    height: 350px;
-    margin-top: 30px;
-    border-radius: 16px;
-    border: 1px solid #ffffff12;
-    background:
-      linear-gradient(#ffffff08 1px, transparent 1px),
-      linear-gradient(90deg, #ffffff08 1px, transparent 1px),
-      #0b1123;
-    background-size: 100% 55px, 65px 100%;
-    overflow: hidden;
-  }
-
-  #environment-chart {
-    display: none;
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  #chart-placeholder {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 25px;
-  }
-
-  .placeholder-icon {
-    font-size: 65px;
-    color: #ae9bff;
-    margin-bottom: 12px;
-  }
-
-  #chart-placeholder h3 {
-    margin: 10px 0;
-    color: #e7e2ff;
-  }
-
-  #chart-placeholder p {
-    color: #9da8c3;
-    line-height: 1.7;
-    max-width: 380px;
-  }
-
-  .chart-legend {
-    display: flex;
-    gap: 25px;
-    margin-top: 22px;
-    color: #a7b2cc;
-    font-size: 13px;
-  }
-
-  .legend-dot {
-    display: inline-block;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    margin-right: 8px;
-  }
-
-  .region-a { background: #a68cff; }
-  .region-b { background: #49d6ed; }
-
-  @media (max-width: 750px) {
-    .chart-panel { padding: 18px; }
-  }
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-let environmentalChart = null;
-
-function updateEnvironmentalChart(labels, regionA, regionB, unit = "") {
-  const canvas = document.getElementById("environment-chart");
-  const placeholder = document.getElementById("chart-placeholder");
-
-  if (!canvas || typeof Chart === "undefined") return;
-
-  if (!labels || labels.length === 0) {
-    canvas.style.display = "none";
-    placeholder.style.display = "flex";
-
-    if (environmentalChart) {
-      environmentalChart.destroy();
-      environmentalChart = null;
-    }
-    return;
-  }
-
-  placeholder.style.display = "none";
-  canvas.style.display = "block";
-
-  if (environmentalChart) {
-    environmentalChart.destroy();
-  }
-
-  environmentalChart = new Chart(canvas, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Region 01",
-          data: regionA,
-          borderColor: "#a68cff",
-          backgroundColor: "#a68cff22",
-          borderWidth: 3,
-          tension: 0.3,
-          spanGaps: false
-        },
-        {
-          label: "Region 02",
-          data: regionB,
-          borderColor: "#49d6ed",
-          backgroundColor: "#49d6ed22",
-          borderWidth: 3,
-          tension: 0.3,
-          spanGaps: false
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: "index", intersect: false },
-      plugins: {
-        legend: {
-          labels: { color: "#c8d0e5" }
-        },
-        tooltip: {
-          callbacks: {
-            label: context =>
-              context.dataset.label + ": " +
-              context.formattedValue + " " + unit
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: "#9ba8c5" },
-          grid: { color: "#ffffff10" }
-        },
-        y: {
-          title: {
-            display: Boolean(unit),
-            text: unit,
-            color: "#b8c3dc"
-          },
-          ticks: { color: "#9ba8c5" },
-          grid: { color: "#ffffff15" }
-        }
-      }
-    }
-  });
-}
-</script>
+<!-- STATISTICAL ANALYSIS -->
 
 <section class="section">
-  <h2>Environmental Intelligence</h2>
+  <div class="eyebrow">Scientific Intelligence</div>
+  <h2 class="section-title">Environmental Intelligence</h2>
   <p class="subtitle">
-    Historical environmental analysis and regional comparison
+    Statistical insights based on historical Earth observations.
   </p>
 
   <div class="stats">
+
     <div class="stat">
-      <div class="stat-label">TEMPERATURE TREND</div>
-      <div class="stat-value">Awaiting data</div>
+      <div class="stat-label">RATE OF CHANGE</div>
+      <div class="stat-value" id="trend-value">Awaiting data</div>
     </div>
+
     <div class="stat">
-      <div class="stat-label">PRECIPITATION CHANGE</div>
-      <div class="stat-value">Awaiting data</div>
+      <div class="stat-label">STATISTICAL SIGNIFICANCE</div>
+      <div class="stat-value">Awaiting analysis</div>
     </div>
+
     <div class="stat">
       <div class="stat-label">FUTURE PROJECTION</div>
-      <div class="stat-value">Awaiting data</div>
+      <div class="stat-value">Awaiting model</div>
     </div>
+
   </div>
 
-  <div class="note">
+  <div class="note" id="science-note">
     DATA CONNECTION PENDING<br>
-    Environmental statistics and predictions will appear
-    after validated historical datasets are connected.
-    Globe markers currently indicate geographic locations only.
+    The platform is ready for environmental datasets.
+    Statistical analysis and predictions will only be displayed
+    when scientifically validated results are available.
   </div>
 </section>
+
 </main>
 
 <footer>
   EARTH TREND DETECTIVE · NASA SPACE APPS CHALLENGE 2026
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-const EARTH_IMAGE =
-  "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg";
+"use strict";
 
-function createEarth(elementId, lat, lng) {
-  const container = document.getElementById(elementId);
+/*
+  EARTH TREND DETECTIVE
+  Frontend data contract:
 
-  const globe = new Globe(container, { animateIn: false })
-    .globeImageUrl(EARTH_IMAGE)
+  data/observations.json
+
+  Example record structure:
+  {
+    "region_id": "riyadh",
+    "date": "2020-01-01",
+    "variable": "temperature",
+    "value": 25.4,
+    "unit": "°C",
+    "source": "Verified dataset identifier"
+  }
+
+  Records must use real measurements.
+  No example measurements are loaded by this page.
+*/
+
+const regions = {
+  riyadh: {
+    lat: 24.7, lng: 46.7,
+    name: "Riyadh"
+  },
+  new_york: {
+    lat: 40.7, lng: -74,
+    name: "New York"
+  },
+  tokyo: {
+    lat: 35.7, lng: 139.7,
+    name: "Tokyo"
+  },
+  london: {
+    lat: 51.5, lng: -0.1,
+    name: "London"
+  },
+  sydney: {
+    lat: -33.9, lng: 151.2,
+    name: "Sydney"
+  }
+};
+
+const units = {
+  temperature: "°C",
+  precipitation: "mm",
+  humidity: "%"
+};
+
+let observations = [];
+let chart = null;
+let earth1 = null;
+let earth2 = null;
+
+const el = id => document.getElementById(id);
+
+function createEarth(id, regionId) {
+  if (typeof Globe === "undefined") {
+    el(id).textContent = "3D globe could not load.";
+    return null;
+  }
+
+  const place = regions[regionId];
+  const container = el(id);
+
+  const globe = new Globe(container, {
+    animateIn: false
+  })
+    .globeImageUrl(
+      "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg"
+    )
     .backgroundColor("rgba(0,0,0,0)")
     .showAtmosphere(true)
-    .atmosphereColor("#8e84ee")
+    .atmosphereColor("#9388ee")
     .atmosphereAltitude(0.16)
-    .pointsData([{ lat, lng, size: 1 }])
+    .pointsData([place])
     .pointLat("lat")
     .pointLng("lng")
-    .pointAltitude(0.012)
-    .pointRadius(0.5)
+    .pointAltitude(0.015)
+    .pointRadius(0.55)
     .pointColor(() => "#ffd57a")
     .width(container.clientWidth)
     .height(container.clientHeight);
 
-  globe.pointOfView({ lat, lng, altitude: 2.3 }, 0);
+  globe.pointOfView({
+    lat: place.lat,
+    lng: place.lng,
+    altitude: 2.3
+  }, 0);
 
   globe.controls().autoRotate = true;
   globe.controls().autoRotateSpeed = 0.3;
@@ -641,49 +661,317 @@ function createEarth(elementId, lat, lng) {
   return globe;
 }
 
-const earth1 = createEarth("globe1", 24.7, 46.7);
-const earth2 = createEarth("globe2", 40.7, -74);
+function moveEarth(globe, regionId) {
+  if (!globe) return;
 
-function changeRegion(selectId, globe) {
-  const select = document.getElementById(selectId);
+  const place = regions[regionId];
+  globe.controls().autoRotate = false;
+  globe.pointsData([place]);
 
-  select.addEventListener("change", () => {
-    const [lat, lng] = select.value.split(",").map(Number);
+  globe.pointOfView({
+    lat: place.lat,
+    lng: place.lng,
+    altitude: 2.3
+  }, 1200);
+}
 
-    globe.controls().autoRotate = false;
-    globe.pointsData([{ lat, lng, size: 1 }]);
-    globe.pointOfView({ lat, lng, altitude: 2.3 }, 1200);
+function validRows() {
+  const variable = el("variable").value;
+  const selectedRegions = [
+    el("region1").value,
+    el("region2").value
+  ];
+
+  return observations.filter(row =>
+    selectedRegions.includes(row.region_id) &&
+    row.variable === variable &&
+    Number.isFinite(Number(row.value)) &&
+    /^\d{4}-\d{2}-\d{2}/.test(String(row.date))
+  );
+}
+
+function availableYears() {
+  return [...new Set(
+    validRows().map(row => Number(String(row.date).slice(0, 4)))
+  )].sort((a, b) => a - b);
+}
+
+function setYearOptions() {
+  const years = availableYears();
+  const start = el("startYear");
+  const end = el("endYear");
+
+  if (!years.length) {
+    for (const select of [start, end]) {
+      select.innerHTML =
+        '<option value="">Awaiting dataset</option>';
+      select.disabled = true;
+    }
+
+    el("timeline").disabled = true;
+    el("selectedYear").textContent = "—";
+    el("timelineStart").textContent = "Dataset start";
+    el("timelineEnd").textContent = "Dataset end";
+    return;
+  }
+
+  for (const select of [start, end]) {
+    select.innerHTML = years.map(y =>
+      `<option value="${y}">${y}</option>`
+    ).join("");
+    select.disabled = false;
+  }
+
+  start.value = String(years[0]);
+  end.value = String(years[years.length - 1]);
+
+  updateTimeline();
+}
+
+function updateTimeline() {
+  const start = Number(el("startYear").value);
+  const end = Number(el("endYear").value);
+  const slider = el("timeline");
+
+  if (!start || !end || start > end) {
+    slider.disabled = true;
+    el("timelineMessage").textContent =
+      "Select a valid start and end year.";
+    return;
+  }
+
+  slider.min = String(start);
+  slider.max = String(end);
+  slider.value = String(end);
+  slider.disabled = start === end;
+
+  el("selectedYear").textContent = end;
+  el("timelineStart").textContent = start;
+  el("timelineEnd").textContent = end;
+
+  el("timelineMessage").textContent =
+    "Explore the selected year using the timeline.";
+
+  drawChart();
+}
+
+function annualValues(regionId, variable, years) {
+  const rows = validRows().filter(row =>
+    row.region_id === regionId &&
+    row.variable === variable
+  );
+
+  return years.map(year => {
+    const matches = rows.filter(row =>
+      Number(String(row.date).slice(0, 4)) === year
+    );
+
+    if (!matches.length) return null;
+
+    // Annual aggregation depends on variable semantics.
+    // Temperature/humidity: average.
+    // Precipitation: sum, assuming source records are
+    // period totals rather than rates.
+    const values = matches.map(row => Number(row.value));
+
+    if (variable === "precipitation") {
+      return values.reduce((a, b) => a + b, 0);
+    }
+
+    return values.reduce((a, b) => a + b, 0) /
+      values.length;
   });
 }
 
-changeRegion("region1", earth1);
-changeRegion("region2", earth2);
-
-window.addEventListener("resize", () => {
-  for (const [id, globe] of [
-    ["globe1", earth1],
-    ["globe2", earth2]
-  ]) {
-    const el = document.getElementById(id);
-    globe.width(el.clientWidth);
-    globe.height(el.clientHeight);
+function drawChart() {
+  if (chart) {
+    chart.destroy();
+    chart = null;
   }
-});
+
+  const years = availableYears().filter(y =>
+    y >= Number(el("startYear").value) &&
+    y <= Number(el("endYear").value) &&
+    y <= Number(el("timeline").value)
+  );
+
+  const canvas = el("trendChart");
+  const placeholder = el("chart-placeholder");
+
+  if (!years.length || typeof Chart === "undefined") {
+    canvas.style.display = "none";
+    placeholder.style.display = "flex";
+    el("chart-status").textContent = "AWAITING DATA";
+    return;
+  }
+
+  const variable = el("variable").value;
+  const region1 = el("region1").value;
+  const region2 = el("region2").value;
+
+  const series1 = annualValues(region1, variable, years);
+  const series2 = annualValues(region2, variable, years);
+
+  if (series1.every(v => v === null) &&
+      series2.every(v => v === null)) {
+    canvas.style.display = "none";
+    placeholder.style.display = "flex";
+    return;
+  }
+
+  placeholder.style.display = "none";
+  canvas.style.display = "block";
+  el("chart-status").textContent = "HISTORICAL DATA";
+
+  chart = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels: years,
+      datasets: [
+        {
+          label: regions[region1].name,
+          data: series1,
+          borderColor: "#ae98ff",
+          backgroundColor: "#ae98ff20",
+          borderWidth: 3,
+          tension: 0.25,
+          spanGaps: false
+        },
+        {
+          label: regions[region2].name,
+          data: series2,
+          borderColor: "#51d9ef",
+          backgroundColor: "#51d9ef20",
+          borderWidth: 3,
+          tension: 0.25,
+          spanGaps: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: "#d6dcf0" }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#9daac4" },
+          grid: { color: "#ffffff12" }
+        },
+        y: {
+          title: {
+            display: true,
+            text: units[variable],
+            color: "#d6dcf0"
+          },
+          ticks: { color: "#9daac4" },
+          grid: { color: "#ffffff12" }
+        }
+      }
+    }
+  });
+}
+
+function refreshDataView() {
+  setYearOptions();
+
+  const hasRows = validRows().length > 0;
+
+  el("data-status").textContent =
+    hasRows ? "DATA CONNECTED" : "AWAITING NASA DATA";
+
+  el("controls-message").textContent = hasRows
+    ? "Select a time range to explore historical observations."
+    : "No validated observations available for this selection.";
+
+  el("trend-value").textContent =
+    "Awaiting analysis";
+
+  drawChart();
+}
+
+async function loadData() {
+  try {
+    const response = await fetch(
+      "data/observations.json",
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) return;
+
+    const result = await response.json();
+
+    if (!Array.isArray(result)) return;
+
+    observations = result.filter(row =>
+      row &&
+      typeof row.region_id === "string" &&
+      typeof row.variable === "string" &&
+      typeof row.date === "string" &&
+      row.value !== null &&
+      row.value !== "" &&
+      Number.isFinite(Number(row.value))
+    );
+
+    refreshDataView();
+  } catch (error) {
+    // Dataset has not been uploaded yet.
+    // The interface remains usable without it.
+  }
+}
+
+function initialize() {
+  earth1 = createEarth("globe1", el("region1").value);
+  earth2 = createEarth("globe2", el("region2").value);
+
+  el("region1").addEventListener("change", event => {
+    moveEarth(earth1, event.target.value);
+    refreshDataView();
+  });
+
+  el("region2").addEventListener("change", event => {
+    moveEarth(earth2, event.target.value);
+    refreshDataView();
+  });
+
+  el("variable").addEventListener(
+    "change", refreshDataView
+  );
+
+  el("startYear").addEventListener(
+    "change", updateTimeline
+  );
+
+  el("endYear").addEventListener(
+    "change", updateTimeline
+  );
+
+  el("timeline").addEventListener("input", event => {
+    el("selectedYear").textContent = event.target.value;
+    drawChart();
+  });
+
+  window.addEventListener("resize", () => {
+    for (const [id, globe] of [
+      ["globe1", earth1],
+      ["globe2", earth2]
+    ]) {
+      if (!globe) continue;
+      const element = el(id);
+      globe.width(element.clientWidth);
+      globe.height(element.clientHeight);
+    }
+  });
+
+  refreshDataView();
+  loadData();
+}
+
+initialize();
 </script>
 
 </body>
 </html>
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  const variable = document.getElementById("environment-variable");
-  const message = document.getElementById("controls-message");
-
-  variable.addEventListener("change", () => {
-    const selected = variable.options[variable.selectedIndex].text;
-
-    message.textContent =
-      selected + " selected. Historical measurements are not connected yet.";
-  });
-});
-</script>
