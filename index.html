@@ -211,6 +211,115 @@ footer {
 </header>
 
 <main>
+  <section class="section" id="environment-controls">
+  <div class="controls-panel">
+    <div class="controls-heading">
+      <div>
+        <div class="eyebrow">DATA EXPLORER</div>
+        <h2>Environmental Controls</h2>
+      </div>
+      <span class="data-status">● AWAITING NASA DATA</span>
+    </div>
+
+    <div class="controls-grid">
+      <label class="control-field">
+        Environmental Variable
+        <select id="environment-variable">
+          <option value="temperature">Temperature (°C)</option>
+          <option value="precipitation">Precipitation (mm)</option>
+          <option value="humidity">Relative Humidity (%)</option>
+        </select>
+      </label>
+
+      <label class="control-field">
+        Start Year
+        <select id="start-year">
+          <option value="">Awaiting dataset</option>
+        </select>
+      </label>
+
+      <label class="control-field">
+        End Year
+        <select id="end-year">
+          <option value="">Awaiting dataset</option>
+        </select>
+      </label>
+    </div>
+
+    <p id="controls-message">
+      Select an environmental variable. Available years will
+      appear automatically when historical data is connected.
+    </p>
+  </div>
+</section>
+
+<style>
+  .controls-panel {
+    padding: 28px;
+    border-radius: 22px;
+    border: 1px solid #8d79d04d;
+    background: linear-gradient(135deg, #161a32, #0c1024);
+    box-shadow: 0 12px 35px #00000030;
+  }
+
+  .controls-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+
+  .controls-heading h2 {
+    margin: 10px 0 0;
+  }
+
+  .data-status {
+    color: #b7a6ff;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .control-field {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 13px;
+    color: #b9bed4;
+  }
+
+  .control-field select {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #625985;
+    background: #11172d;
+    color: white;
+    font-size: 14px;
+  }
+
+  #controls-message {
+    margin: 22px 0 0;
+    font-size: 13px;
+    color: #949fbc;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 750px) {
+    .controls-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
 <section class="comparison">
 
   <article class="panel">
@@ -565,115 +674,7 @@ window.addEventListener("resize", () => {
 </body>
 </html>
 
-<section class="section" id="environment-controls">
-  <div class="controls-panel">
-    <div class="controls-heading">
-      <div>
-        <div class="eyebrow">DATA EXPLORER</div>
-        <h2>Environmental Controls</h2>
-      </div>
-      <span class="data-status">● AWAITING NASA DATA</span>
-    </div>
 
-    <div class="controls-grid">
-      <label class="control-field">
-        Environmental Variable
-        <select id="environment-variable">
-          <option value="temperature">Temperature (°C)</option>
-          <option value="precipitation">Precipitation (mm)</option>
-          <option value="humidity">Relative Humidity (%)</option>
-        </select>
-      </label>
-
-      <label class="control-field">
-        Start Year
-        <select id="start-year">
-          <option value="">Awaiting dataset</option>
-        </select>
-      </label>
-
-      <label class="control-field">
-        End Year
-        <select id="end-year">
-          <option value="">Awaiting dataset</option>
-        </select>
-      </label>
-    </div>
-
-    <p id="controls-message">
-      Select an environmental variable. Available years will
-      appear automatically when historical data is connected.
-    </p>
-  </div>
-</section>
-
-<style>
-  .controls-panel {
-    padding: 28px;
-    border-radius: 22px;
-    border: 1px solid #8d79d04d;
-    background: linear-gradient(135deg, #161a32, #0c1024);
-    box-shadow: 0 12px 35px #00000030;
-  }
-
-  .controls-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 22px;
-  }
-
-  .controls-heading h2 {
-    margin: 10px 0 0;
-  }
-
-  .data-status {
-    color: #b7a6ff;
-    font-size: 12px;
-    letter-spacing: 1px;
-  }
-
-  .controls-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
-  }
-
-  .control-field {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    font-size: 13px;
-    color: #b9bed4;
-  }
-
-  .control-field select {
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    border: 1px solid #625985;
-    background: #11172d;
-    color: white;
-    font-size: 14px;
-  }
-
-  #controls-message {
-    margin: 22px 0 0;
-    font-size: 13px;
-    color: #949fbc;
-    line-height: 1.6;
-  }
-
-  @media (max-width: 750px) {
-    .controls-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
-
-<script>
 document.addEventListener("DOMContentLoaded", () => {
   const variable = document.getElementById("environment-variable");
   const message = document.getElementById("controls-message");
