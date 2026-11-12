@@ -240,6 +240,36 @@ footer {
 .data-description { color: #9da9c5; font-size: 13px; margin-bottom: 0; line-height: 1.6; }
 @media (max-width: 750px) { .data-fields { grid-template-columns: 1fr; } }
 
+
+/* Historical chart area — intentionally empty until real data is available */
+.historical-chart-panel {
+  border: 1px solid #7260ad55;
+  border-radius: 22px;
+  padding: 26px;
+  background: linear-gradient(145deg, #13172cdd, #0a1022dd);
+}
+.historical-chart-panel h2 { margin: 10px 0; }
+.historical-chart-empty {
+  min-height: 285px;
+  margin-top: 24px;
+  padding: 26px;
+  border: 1px solid #ffffff16;
+  border-radius: 16px;
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 55px, #ffffff0b 56px), #0a1122;
+  color: #d8d3ef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+.historical-chart-symbol { font-size: 55px; color: #ae98ff; margin-bottom: 10px; }
+.historical-chart-empty p { max-width: 470px; color: #9da9c5; line-height: 1.6; }
+.historical-chart-legend { display:flex; gap:24px; color:#aab6cf; margin-top:18px; font-size:13px; }
+.chart-dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:8px; }
+.chart-dot.first { background:#ae98ff; }
+.chart-dot.second { background:#51d9ef; }
+
 </style>
 </head>
 
@@ -259,38 +289,6 @@ footer {
 </header>
 
 <main>
-
-<section class="data-controls" aria-labelledby="data-controls-title">
-  <div class="data-controls-inner">
-    <div class="data-controls-heading">
-      <div>
-        <div class="eyebrow">DATA EXPLORER</div>
-        <h2 id="data-controls-title">Environmental Controls</h2>
-      </div>
-      <span class="data-pill">AWAITING VERIFIED DATA</span>
-    </div>
-    <div class="data-fields">
-      <label>Environmental Variable
-        <select id="environment-variable">
-          <option value="temperature">Temperature (°C)</option>
-          <option value="precipitation">Precipitation (mm)</option>
-          <option value="humidity">Relative Humidity (%)</option>
-        </select>
-      </label>
-      <label>Start Year
-        <select id="start-year" disabled>
-          <option>Awaiting dataset</option>
-        </select>
-      </label>
-      <label>End Year
-        <select id="end-year" disabled>
-          <option>Awaiting dataset</option>
-        </select>
-      </label>
-    </div>
-    <p class="data-description">Choose an environmental factor. Available years and trend results will be enabled when verified historical observations are connected.</p>
-  </div>
-</section>
 
 <section class="comparison">
 
@@ -331,6 +329,58 @@ footer {
   </article>
 
 </section>
+
+<section class="data-controls" aria-labelledby="data-controls-title">
+  <div class="data-controls-inner">
+    <div class="data-controls-heading">
+      <div>
+        <div class="eyebrow">DATA EXPLORER</div>
+        <h2 id="data-controls-title">Environmental Controls</h2>
+      </div>
+      <span class="data-pill">AWAITING VERIFIED DATA</span>
+    </div>
+    <div class="data-fields">
+      <label>Environmental Variable
+        <select id="environment-variable">
+          <option value="temperature">Temperature (°C)</option>
+          <option value="precipitation">Precipitation (mm)</option>
+          <option value="humidity">Relative Humidity (%)</option>
+        </select>
+      </label>
+      <label>Start Year
+        <select id="start-year" disabled>
+          <option>Awaiting dataset</option>
+        </select>
+      </label>
+      <label>End Year
+        <select id="end-year" disabled>
+          <option>Awaiting dataset</option>
+        </select>
+      </label>
+    </div>
+    <p class="data-description">Choose an environmental factor. Available years and trend results will be enabled when verified historical observations are connected.</p>
+  </div>
+</section>
+
+
+<section class="section" id="historical-charts">
+  <div class="historical-chart-panel">
+    <div class="eyebrow">HISTORICAL ANALYSIS</div>
+    <h2>Environmental Trend Comparison</h2>
+    <p class="subtitle">Explore how the selected environmental factor changes over time in both regions.</p>
+    <div class="historical-chart-empty">
+      <div class="historical-chart-symbol" aria-hidden="true">⌁</div>
+      <strong>Awaiting verified NASA data</strong>
+      <p>Regional trends, annual measurements and comparison charts will appear here once the dataset is connected.</p>
+    </div>
+    <div class="historical-chart-legend">
+      <span><i class="chart-dot first"></i>Region 01</span>
+      <span><i class="chart-dot second"></i>Region 02</span>
+    </div>
+  </div>
+</section>
+
+
 
 <section class="section">
   <h2>Environmental Intelligence</h2>
