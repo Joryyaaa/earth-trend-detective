@@ -193,6 +193,53 @@ footer {
   .globe { height: 320px; }
   nav { gap: 15px; }
 }
+
+/* Environmental data controls — separate from 3D globe behavior */
+.data-controls {
+  max-width: 1200px;
+  margin: 20px auto 8px;
+  padding: 0 24px;
+}
+.data-controls-inner {
+  border: 1px solid #7260ad55;
+  border-radius: 22px;
+  background: linear-gradient(130deg, #171a35, #0b1124);
+  padding: 26px;
+}
+.data-controls-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.data-controls-heading h2 { margin: 8px 0; font-size: 24px; }
+.data-pill {
+  border: 1px solid #7968ae;
+  border-radius: 20px;
+  padding: 8px 12px;
+  color: #c2b3ff;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.data-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+.data-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  color: #b7bed6;
+  font-size: 13px;
+}
+.data-fields select { width: 100%; }
+.data-fields select:disabled { opacity: .55; cursor: not-allowed; }
+.data-description { color: #9da9c5; font-size: 13px; margin-bottom: 0; line-height: 1.6; }
+@media (max-width: 750px) { .data-fields { grid-template-columns: 1fr; } }
+
 </style>
 </head>
 
@@ -212,6 +259,39 @@ footer {
 </header>
 
 <main>
+
+<section class="data-controls" aria-labelledby="data-controls-title">
+  <div class="data-controls-inner">
+    <div class="data-controls-heading">
+      <div>
+        <div class="eyebrow">DATA EXPLORER</div>
+        <h2 id="data-controls-title">Environmental Controls</h2>
+      </div>
+      <span class="data-pill">AWAITING VERIFIED DATA</span>
+    </div>
+    <div class="data-fields">
+      <label>Environmental Variable
+        <select id="environment-variable">
+          <option value="temperature">Temperature (°C)</option>
+          <option value="precipitation">Precipitation (mm)</option>
+          <option value="humidity">Relative Humidity (%)</option>
+        </select>
+      </label>
+      <label>Start Year
+        <select id="start-year" disabled>
+          <option>Awaiting dataset</option>
+        </select>
+      </label>
+      <label>End Year
+        <select id="end-year" disabled>
+          <option>Awaiting dataset</option>
+        </select>
+      </label>
+    </div>
+    <p class="data-description">Choose an environmental factor. Available years and trend results will be enabled when verified historical observations are connected.</p>
+  </div>
+</section>
+
 <section class="comparison">
 
   <article class="panel">
