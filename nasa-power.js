@@ -87,6 +87,20 @@
     const dx=points.reduce((s,p)=>s+(p[0]-mx)**2,0);
     return dx>0?points.reduce((s,p)=>s+(p[0]-mx)*(p[1]-my),0)/dx:null;
   }
+  // Median of all pairwise annual slopes (Theil–Sen), using observed values only.
+  function theilSen(points){
+    if(points.length<3)return null;
+    const slopes=[];
+    for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++){
+      const dt=points[j][0]-points[i][0];
+      if(dt>0)slopes.push((points[j][1]-points[i][1])/dt);
+    }
+    if(!slopes.length)return null;
+    slopes.sort((a,b)=>a-b);
+    const mid=Math.floor(slopes.length/2);
+    return slopes.length%2?slopes[mid]:(slopes[mid-1]+slopes[mid])/2;
+  }
+  function pText(p){return p<0.001?"p < 0.001":"p="+fmt(p,3);}
   // Normal approximation of the Mann–Kendall S statistic with tie correction.
   function erf(x){
     const sg=Math.sign(x);x=Math.abs(x);
@@ -232,11 +246,11 @@
     const p1=sample(active[0],v,start,temporal?mid:end);
     const p2=sample(active[temporal?0:1],v,temporal?mid+1:start,end);
     const groups=[p1,p2];
-    const slopes=groups.map(slope),stats=groups.map(mk);
+    const slopes=groups.map(slope),senSlopes=groups.map(theilSen),stats=groups.map(mk);
     const slopesText=slopes.map(n=>n===null?"—":sign(n)).join(" / ");
     setMetric("rate-metric",temporal?"EARLIER / LATER SLOPE":"REGION 01 / 02 SLOPE",slopesText+" "+meta.unit+"/yr");
     setMetric("significance-metric","MANN–KENDALL (EXPLORATORY)",
-      stats.map(st=>st.p===null?"—":Math.abs(st.autocorr)>.2?"Correlation warning":"p="+fmt(st.p,3)).join(" / "));
+      stats.map(st=>st.p===null?"—":Math.abs(st.autocorr)>.2?"Correlation warning ("+pText(st.p)+")":pText(st.p)).join(" / "));
     const means=groups.map(g=>g.length?g.reduce((s,p)=>s+p[1],0)/g.length:null);
     let interpretation=temporal?
       "Earlier window: "+start+"–"+mid+"; later window: "+(mid+1)+"–"+end+". "+
