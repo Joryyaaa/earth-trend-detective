@@ -8,10 +8,14 @@
     temperature:{code:"T2M",name:"Near-surface air temperature",unit:"°C"},
     precipitation:{code:"PRECTOTCORR",name:"Corrected precipitation",unit:"mm/year"},
     humidity:{code:"RH2M",name:"Relative humidity",unit:"%"},
-    wind:{code:"WS2M",name:"2 m wind speed",unit:"m/s"}
+    wind:{code:"WS2M",name:"2 m wind speed",unit:"m/s"},
+    maximumTemperature:{code:"T2M_MAX",name:"Daily maximum 2 m air temperature (monthly mean)",unit:"°C"},
+    minimumTemperature:{code:"T2M_MIN",name:"Daily minimum 2 m air temperature (monthly mean)",unit:"°C"},
+    solarIrradiance:{code:"ALLSKY_SFC_SW_DWN",name:"All-sky surface shortwave irradiance",unit:"MJ/m²/day"}
   };
   const names={
     "28.3838,36.5662":"Tabuk (point)",
+    "24.4709,39.6122":"Madinah (point)",
     "24.7,46.7":"Riyadh (point)",
     "40.7,-74":"New York (point)",
     "35.7,139.7":"Tokyo (point)",
@@ -57,7 +61,7 @@
   function loadLocation(loc){
     if(cache.has(loc.key))return cache.get(loc.key);
     const query=new URLSearchParams({
-      parameters:"T2M,PRECTOTCORR,RH2M,WS2M",community:"AG",
+      parameters:"T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M,WS2M,ALLSKY_SFC_SW_DWN",community:"AG",
       latitude:String(loc.lat),longitude:String(loc.lon),
       start:String(START),end:String(END),format:"JSON"
     });
@@ -297,7 +301,7 @@
     const output=forecastResults.map(({loc,result:r})=>{
       if(!r.ok)return loc.name+": forecast unavailable ("+r.message+").";
       const physical=(v==="humidity"&&(r.prediction.value<0||r.prediction.value>100))||
-        ((v==="precipitation"||v==="wind")&&r.prediction.value<0);
+        ((v==="precipitation"||v==="wind"||v==="solarIrradiance")&&r.prediction.value<0);
       if(physical)return loc.name+": model produced an implausible value; forecast withheld.";
       return loc.name+" · "+r.prediction.year+": "+
         fmt(r.prediction.value,2)+" "+meta.unit+
