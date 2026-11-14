@@ -91,14 +91,37 @@ select:disabled{opacity:.55;cursor:not-allowed}
 @media(min-width:761px){
   .dashboard[data-active-view="trends"] .center-column,
   .dashboard[data-active-view="insights"] .center-column,
-  .dashboard[data-active-view="forecast"] .center-column{display:none}
+  .dashboard[data-active-view="forecast"] .center-column,.dashboard[data-active-view="assistant"] .center-column{display:none}
   .dashboard[data-active-view="trends"] .content-grid,
   .dashboard[data-active-view="insights"] .content-grid,
-  .dashboard[data-active-view="forecast"] .content-grid{grid-template-columns:minmax(0,1fr)}
+  .dashboard[data-active-view="forecast"] .content-grid,.dashboard[data-active-view="assistant"] .content-grid{grid-template-columns:minmax(0,1fr)}
   .dashboard[data-active-view="trends"] .chart-box{min-height:330px}
   .dashboard[data-active-view="insights"] .info-list,
   .dashboard[data-active-view="forecast"] .info-list{max-width:850px;font-size:14px}
 }
+
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.38;background-image:radial-gradient(circle at 18% 14%,#c4adff 1px,transparent 2px),radial-gradient(circle at 84% 27%,#7bb4ff 1px,transparent 2px),radial-gradient(circle at 56% 80%,#cfcbff 1px,transparent 2px);background-size:240px 220px,370px 290px,420px 330px}
+.dashboard{position:relative;z-index:1}
+.topbar{background:linear-gradient(90deg,#0c0c25f5,#090c1efa);box-shadow:0 1px 28px #6553dc22}
+.brand{font-weight:900;letter-spacing:2.3px}
+.page-title h1{font-size:clamp(20px,2.1vw,30px);letter-spacing:1px;text-shadow:0 0 25px #a994ff22}
+.page-title em{color:#c8b3ff;text-shadow:0 0 22px #9167ff66}
+.panel{box-shadow:inset 0 1px #ffffff10,0 0 22px #130e36a8}
+.planet{background:radial-gradient(ellipse at 50% 50%,#24225455,transparent 72%),linear-gradient(140deg,#12142df7,#060c1b)}
+.planet .section-header small{color:#9fdaf5}
+.globe-reading{padding:6px 12px;min-height:29px;text-align:center;color:#b8c5f7;font-size:10px;line-height:1.4;background:#15152a9c;border-top:1px solid #9782fa22}
+.globe-footer{padding-top:7px}
+.assistant-intro{font-size:10px;letter-spacing:1.1px;color:#b4a7ed;margin-top:17px}
+.assistant-log{min-height:160px;flex:1;overflow:auto;display:flex;flex-direction:column;gap:9px;padding:14px 4px}
+.assistant-bubble{font-size:12px;line-height:1.6;padding:11px 13px;border:1px solid #64568a44;border-radius:12px;max-width:94%;white-space:pre-wrap}
+.assistant-bubble.user{align-self:flex-end;background:#6950a456;color:#f1eaff}
+.assistant-bubble.assistant{align-self:flex-start;background:#101c33;color:#d1ddfa}
+.assistant-suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.assistant-suggestions button{border:1px solid #8675b972;background:#251b3d;color:#d3c3ff;border-radius:18px;padding:8px 11px;font-size:11px}
+.assistant-form{display:flex;gap:8px}
+.assistant-form input{flex:1;min-width:0;background:#0a1325;border:1px solid #786ba1;color:#eff0fc;padding:12px;border-radius:9px;font:inherit;font-size:12px}
+.assistant-form button{background:#8760c9;border:0;color:#fff;border-radius:9px;padding:0 15px;font-weight:700}
+.assistant-disclosure{font-size:10px;color:#7e91af;line-height:1.5;margin-bottom:0}
 </style>
 </head>
 <body>
@@ -114,6 +137,7 @@ select:disabled{opacity:.55;cursor:not-allowed}
       <button type="button" class="navbutton" data-view="trends" aria-pressed="false"><span class="symbol">⌁</span> Trends</button>
       <button type="button" class="navbutton" data-view="insights" aria-pressed="false"><span class="symbol">✧</span> Insights</button>
       <button type="button" class="navbutton" data-view="forecast" aria-pressed="false"><span class="symbol">✦</span> AI Forecast</button>
+      <button type="button" class="navbutton" data-view="assistant" aria-pressed="false"><span class="symbol">◉</span> Data Assistant</button>
     </div>
     <div class="side-divider"></div>
     <div class="label">COMPARISON MODE</div>
@@ -136,16 +160,16 @@ select:disabled{opacity:.55;cursor:not-allowed}
     <button id="load-nasa-data" type="button" class="load-nasa-button">↻ Refresh NASA observations</button>
     <div id="nasa-data-status" class="nasa-status" role="status">NASA data not loaded yet.</div>
     <div class="spacer"></div>
-    <div class="sidebar-note"><span style="color:#c5b7ff">● DATA PENDING</span><br>Controls and visualizations are ready for verified observations. No sample measurements are shown.</div>
+    <div class="sidebar-note"><span style="color:#c5b7ff">◉ NASA POWER · POINT DATA</span><br>Click a globe to inspect a point. Markers indicate locations, not historic satellite imagery.</div>
   </aside>
   <main class="workspace">
-    <div class="page-title"><div><div class="label">GLOBAL ENVIRONMENT MONITOR</div><h1>Explore. Compare. <em>Predict.</em></h1></div><span class="tag">LIVE 3D EXPLORER</span></div>
+    <div class="page-title"><div><div class="label">✦ NASA SPACE APPS 2026 · EARTH SYSTEM INTELLIGENCE</div><h1>EARTH SYSTEM <em>DETECTIVE</em></h1></div><span class="tag">MISSION CONSOLE · BUILD 03</span></div>
     <div class="content-grid">
       <div class="center-column">
         <section class="globe-grid" aria-label="Two interactive Earth globes">
           <article class="panel planet">
             <div class="section-header"><strong id="globe-title-1">Region 01</strong><small>● INTERACTIVE EARTH</small></div>
-            <div id="globe1" class="globe"></div>
+            <div id="globe1" class="globe"></div><div id="globe-inspect-1" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region1" aria-label="Region 01">
                 <option value="28.3838,36.5662" selected>Tabuk, Saudi Arabia (pilot)</option><option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74">New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
@@ -154,7 +178,7 @@ select:disabled{opacity:.55;cursor:not-allowed}
           </article>
           <article class="panel planet">
             <div class="section-header"><strong id="globe-title-2">Region 02</strong><small>● INTERACTIVE EARTH</small></div>
-            <div id="globe2" class="globe"></div>
+            <div id="globe2" class="globe"></div><div id="globe-inspect-2" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region2" aria-label="Region 02">
                 <option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74" selected>New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
@@ -175,6 +199,7 @@ select:disabled{opacity:.55;cursor:not-allowed}
           <button type="button" class="active" data-tab="trends" aria-pressed="true">Trends</button>
           <button type="button" data-tab="insights" aria-pressed="false">Insights</button>
           <button type="button" data-tab="forecast" aria-pressed="false">Forecast</button>
+          <button type="button" data-tab="assistant" aria-pressed="false">Ask Data</button>
         </div>
         <div class="tab-body" id="panel-trends">
           <div class="chart-box" id="chart-container"><div id="chart-empty"><div class="visual">⌁</div><strong>Historical Trend Comparison</strong><p>Loading verified observations from NASA POWER, or select Refresh to retry.</p></div><canvas id="nasa-trend-chart" hidden></canvas></div>
@@ -193,6 +218,21 @@ select:disabled{opacity:.55;cursor:not-allowed}
             <div id="forecast-output" class="forecast-output">Awaiting validated data.</div>
             <p class="forecast-caution">Model estimates, not NASA predictions. Climate scenarios, extremes and external drivers are not represented.</p>
           </div>
+        </div>
+        <div class="tab-body" id="panel-assistant" hidden>
+          <div class="assistant-intro">SCIENCE COPILOT · DATA-GROUNDED ANSWERS</div>
+          <div id="assistant-log" class="assistant-log" aria-live="polite"></div>
+          <div class="assistant-suggestions">
+            <button type="button" data-question="Compare these locations">Compare</button>
+            <button type="button" data-question="Explain the trend">Trends</button>
+            <button type="button" data-question="What happens in the future?">Future</button>
+            <button type="button" data-question="Where is the data from?">Sources</button>
+          </div>
+          <form id="assistant-form" class="assistant-form">
+            <input id="assistant-input" placeholder="Ask about trends or forecasts…" aria-label="Ask the data assistant" autocomplete="off">
+            <button type="submit">Send</button>
+          </form>
+          <p class="assistant-disclosure">Guided analytical assistant using your selected NASA observations, not an open-ended LLM.</p>
         </div>
       </section>
     </div>
@@ -300,6 +340,7 @@ document.querySelectorAll("[data-view], [data-tab]").forEach(button => {
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="nasa-power.js"></script>
+<script src="nasa-power.js?v=7cb4a422"></script>
+<script src="data-assistant.js?v=e65dc9b0"></script>
 </body>
 </html>
