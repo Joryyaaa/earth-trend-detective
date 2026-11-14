@@ -237,6 +237,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .globe-heat-panel .heat-sample-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:8px;max-width:310px}
 .heat-sample-tile{height:28px;display:flex;align-items:center;justify-content:center;border:1px solid #ffffff65;border-radius:5px;color:#080c1b;box-shadow:inset 0 1px 3px #ffffff50;font-size:10px;font-weight:800;text-shadow:0 1px #ffffff55}
 @media(min-width:1500px){.globe-heat-panel .heat-sample-grid{max-width:410px}.heat-sample-tile{height:34px}}
+.globe-heat-trigger{display:block;width:100%;margin-top:7px;padding:8px 11px;background:linear-gradient(95deg,#3b295e,#153854);color:#f2eaff;border:1px solid #9676dc;border-radius:9px;font-size:10px;font-weight:750;letter-spacing:1.1px;box-shadow:0 0 15px #7357e72a}.globe-heat-trigger:hover{border-color:#cfbcff;background:#60458e}
 </style>
 </head>
 <body>
@@ -297,7 +298,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             <div class="globe-footer">
               <select id="region1" aria-label="Region 01">
                 <option value="28.3838,36.5662" selected>Tabuk, Saudi Arabia (pilot)</option><option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74">New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
-              </select><p>Drag to rotate · Scroll to zoom</p>
+              </select><button type="button" class="globe-heat-trigger" data-heat-target="region1">◉ SHOW HEATMAP · EARTH 01</button><p>Drag to rotate · Scroll to zoom</p>
             </div>
           </article>
           <article class="panel planet">
@@ -306,7 +307,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             <div class="globe-footer">
               <select id="region2" aria-label="Region 02">
                 <option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74" selected>New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
-              </select><p>Drag to rotate · Scroll to zoom</p>
+              </select><button type="button" class="globe-heat-trigger" data-heat-target="region2">◉ SHOW HEATMAP · EARTH 02</button><p>Drag to rotate · Scroll to zoom</p>
             </div>
           </article>
         </section>
