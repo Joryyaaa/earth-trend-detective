@@ -108,14 +108,24 @@
     window.addEventListener("earth:data-updated",()=>{
       const c=window.EarthData?.getCurrent?.();
       if(!c?.loaded)return;
+      const variable=$("environment-variable").value;
+      const mode=$("comparison-mode").value;
+      const startYear=Number($("start-year").value),endYear=Number($("end-year").value);
+      const middle=Math.floor((startYear+endYear)/2);
       [1,2].forEach(i=>{
         const marker=$("globe-inspect-"+i);
-        const target=c.locations[i-1]; if(!marker||!target)return;
-        const variable=$("environment-variable").value;
-        const values=Object.entries(target.data)
-          .map(([y,row])=>({y:Number(y),v:row[variable]})).filter(o=>Number.isFinite(o.v));
-        const last=values.at(-1);
-        marker.textContent=last?variable.toUpperCase()+" · "+last.y+": "+fmt(last.v)+" "+variables[variable].unit:"No complete annual values";
+        const target=c.locations[mode==="periods"?0:i-1];
+        if(!marker||!target)return;
+        const a=mode==="periods"?(i===1?startYear:middle+1):startYear;
+        const b=mode==="periods"?(i===1?middle:endYear):endYear;
+        const series=years(target.data,a,b);
+        const mean=avg(series),sl=trend(series);
+        const label=mode==="periods"?(i===1?"EARLIER YEARS":"LATER YEARS"):"SELECTED NASA POINT";
+        marker.textContent=label+" · "+a+"–"+b+
+          " · "+series.length+" values · mean "+fmt(mean)+" "+variables[variable].unit+
+          " · slope "+fmt(sl,3)+" "+variables[variable].unit+"/yr";
+        const globe=i===1?earth1:earth2;
+        if(globe&&globe.pointColor)globe.pointColor(()=>mode==="periods"?(i===1?"#c1a8ff":"#63d5ed"):"#ffd57a");
       });
     });
     addMessage("Choose a suggested question, or ask about the current location, trends, statistics or experimental forecast. Answers use the observations shown in this dashboard.","assistant");
