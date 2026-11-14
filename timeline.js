@@ -18,6 +18,57 @@
     if(!Number.isFinite(start)||!Number.isFinite(end)||start>end)return null;
     return {data,variable,start,end,mode:$("comparison-mode").value};
   }
+  function visualBars(state){
+    const {data,variable,start,end,mode}=state;
+    const first=data.locations[0],second=data.locations[mode==="periods"?0:1];
+    const a=first.data?.[activeYear]?.[variable];
+    const b=second.data?.[activeYear]?.[variable];
+    const pool=[];
+    for(let y=start;y<=end;y++){
+      for(const row of [first,second]){
+        const v=row.data?.[y]?.[variable];
+        if(Number.isFinite(v))pool.push(v);
+      }
+    }
+    const min=pool.length?Math.min(...pool):0,max=pool.length?Math.max(...pool):1;
+    const span=Math.max(max-min,0.00001);
+    const width=v=>Number.isFinite(v)?Math.max(2,Math.min(100,((v-min)/span)*100)):0;
+    [["timeline-fill-1",a],["timeline-fill-2",b]].forEach(([id,v])=>{
+      const el=$(id);if(el)el.style.width=width(v)+"%";
+    });
+    const canvas=$("timeline-sparkline");
+    if(!canvas)return;
+    const rect=canvas.getBoundingClientRect();
+    const w=Math.max(200,Math.floor(rect.width||580)),h=94;
+    canvas.width=w*devicePixelRatio;canvas.height=h*devicePixelRatio;
+    const ctx=canvas.getContext("2d");
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    ctx.clearRect(0,0,w,h);
+    const pad=8;
+    const series=[first,second];
+    const colors=["#b69cff","#6de0f2"];
+    series.forEach((region,i)=>{
+      ctx.beginPath();let open=false;
+      for(let y=start;y<=end;y++){
+        const v=region.data?.[y]?.[variable];
+        if(!Number.isFinite(v)){open=false;continue;}
+        const x=pad+(y-start)/Math.max(1,end-start)*(w-2*pad);
+        const yy=h-pad-(v-min)/span*(h-2*pad);
+        if(!open){ctx.moveTo(x,yy);open=true;}else ctx.lineTo(x,yy);
+      }
+      ctx.strokeStyle=colors[i];ctx.lineWidth=2.4;ctx.stroke();
+      const val=region.data?.[activeYear]?.[variable];
+      if(Number.isFinite(val)){
+        const x=pad+(activeYear-start)/Math.max(1,end-start)*(w-2*pad);
+        const y=h-pad-(val-min)/span*(h-2*pad);
+        ctx.beginPath();ctx.arc(x,y,5,0,2*Math.PI);ctx.fillStyle=colors[i];ctx.fill();
+        ctx.strokeStyle="#060914";ctx.lineWidth=2;ctx.stroke();
+      }
+    });
+    const x=pad+(activeYear-start)/Math.max(1,end-start)*(w-2*pad);
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);
+    ctx.strokeStyle="#ffffff60";ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+  }
   function draw(){
     const state=read(),slider=$("timeline-year"),label=$("timeline-current-year");
     if(!slider||!label)return;
@@ -61,6 +112,7 @@
     }
     const delta=Number.isFinite(val1)&&Number.isFinite(val2)&&!same
       ? " · Difference (02 − 01): "+format(val2-val1)+" "+unit : "";
+    visualBars(state);
     $("timeline-context").textContent=
       (same?"Same geographic point · "+(activeYear<=mid?"earlier":"later")+" comparison period":
        data.locations[0].loc.name+" versus "+data.locations[1].loc.name)+
@@ -85,6 +137,7 @@
       },850);
     });
     window.addEventListener("earth:data-updated",draw);
+    window.addEventListener("resize",()=>{if(read())draw();});
     ["comparison-mode","environment-variable","start-year","end-year","region1","region2"]
       .forEach(id=>$(id)?.addEventListener("change",()=>{
         stop();
