@@ -61,6 +61,36 @@
     const dir = s => s===null?"unavailable":s>0?"increasing":s<0?"decreasing":"stable";
     return "Selected variable: "+variables[v].label+". "+label1+" trend is "+dir(slope1)+" at "+fmt(slope1,3)+" "+u+"/year; "+label2+" trend is "+dir(slope2)+" at "+fmt(slope2,3)+" "+u+"/year. This is a descriptive linear rate; check statistical significance and uncertainty separately.";
   }
+  // One-step undo restores the exact pre-edit chat messages in memory.
+  let previousChat = null;
+  function chatLog(){return $("assistant-log");}
+  function snapshot(){return [...chatLog().children].map(node=>({text:node.textContent,kind:node.classList.contains("user")?"user":"assistant"}));}
+  function restore(items){
+    const log=chatLog();log.replaceChildren();
+    for(const item of items)addMessage(item.text,item.kind);
+  }
+  function rememberAction(){
+    previousChat=snapshot();
+    $("assistant-undo").disabled=false;
+  }
+  function undo(){
+    if(!previousChat)return;
+    const old=previousChat;previousChat=null;
+    restore(old);
+    $("assistant-undo").disabled=true;
+  }
+  function deleteLast(){
+    const log=chatLog(),messages=[...log.children];
+    const lastUserIndex=messages.map(e=>e.classList.contains("user")).lastIndexOf(true);
+    if(lastUserIndex===-1)return;
+    rememberAction();
+    messages.slice(lastUserIndex).forEach(e=>e.remove());
+  }
+  function clearChat(){
+    if(!chatLog().children.length)return;
+    rememberAction();
+    chatLog().replaceChildren();
+  }
   function addMessage(text,kind){
     const log=$("assistant-log");
     if(!log)return;
@@ -76,6 +106,9 @@
     addMessage(report(query.toLowerCase()),"assistant");
   }
   function binding() {
+    $("assistant-clear")?.addEventListener("click",clearChat);
+    $("assistant-delete-last")?.addEventListener("click",deleteLast);
+    $("assistant-undo")?.addEventListener("click",undo);
     const form=$("assistant-form");
     if(form){
       form.addEventListener("submit",e=>{
