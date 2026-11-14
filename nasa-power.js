@@ -163,34 +163,47 @@
     return {predict};
   }
   function forecast(points,horizon){
-    // Require contiguous annual data, no missing years, and an out-of-sample holdout.
-    if(points.length<22)return {ok:false,message:"Need ≥22 complete annual observations."};
-    for(let i=1;i<points.length;i++)if(points[i][0]!==points[i-1][0]+1)return {ok:false,message:"Missing years prevent this autoregressive forecast."};
-    const holdout=Math.min(8,Math.max(5,Math.floor(points.length*.2)));
-    const train=points.slice(0,-holdout);
-    const model=fitAR(train);
-    if(!model)return {ok:false,message:"Model could not be fitted."};
-    let errors=[],baseErrors=[];
-    const y=points.map(p=>p[1]);
-    for(let i=train.length;i<points.length;i++){
-      const pred=model.predict(i,y[i-1],y[i-2]);
-      errors.push((pred-y[i])**2);
-      baseErrors.push((y[i-1]-y[i])**2);
+    // Rolling-origin, strictly out-of-sample h-step evaluation. No future observations
+    // are used as model inputs; refit at each historical origin.
+    if(points.length<30)return {ok:false,message:"Need at least 30 complete annual observations for forecast validation."};
+    for(let i=1;i<points.length;i++)if(points[i][0]!==points[i-1][0]+1)
+      return {ok:false,message:"Missing years prevent forecast validation."};
+    if(![1,3,5].includes(horizon))return {ok:false,message:"Unsupported forecast horizon."};
+    const values=points.map(p=>p[1]);
+    const holdout=Math.min(8,Math.max(5,Math.floor(values.length*.2)));
+    const start=values.length-holdout;
+    const errors=[],baseErrors=[];
+    for(let target=start;target<values.length;target++){
+      const origin=target-horizon;
+      if(origin<22)continue;
+      const history=values.slice(0,origin);
+      const model=fitAR(history);
+      if(!model)return {ok:false,message:"Model fitting failed during validation."};
+      for(let step=0;step<horizon;step++){
+        const n=history.length;
+        const next=model.predict(n,history[n-1],history[n-2]);
+        if(!Number.isFinite(next))return {ok:false,message:"Non-finite historical prediction."};
+        history.push(next);
+      }
+      const predicted=history[history.length-1],actual=values[target];
+      errors.push((predicted-actual)**2);
+      baseErrors.push((values[origin-1]-actual)**2);
     }
+    if(errors.length<5)return {ok:false,message:"Insufficient independent historical predictions."};
     const rmse=Math.sqrt(errors.reduce((a,b)=>a+b,0)/errors.length);
     const naive=Math.sqrt(baseErrors.reduce((a,b)=>a+b,0)/baseErrors.length);
-    const full=fitAR(points);
-    if(!full||!Number.isFinite(rmse))return {ok:false,message:"Unable to validate the model."};
-    const history=y.slice(),predictions=[];
+    const validated=rmse<naive;
+    const full=fitAR(values);
+    if(!full)return {ok:false,message:"Model could not be fitted."};
+    const history=values.slice(),predictions=[];
     for(let h=1;h<=horizon;h++){
       const n=history.length;
-      const pred=full.predict(n,history[n-1],history[n-2]);
-      if(!Number.isFinite(pred))return {ok:false,message:"Model produced an invalid forecast."};
-      // Physical limits for annual summaries; not a hard scientific guarantee.
-      history.push(pred);
-      predictions.push({year:points.at(-1)[0]+h,value:pred});
+      const value=full.predict(n,history[n-1],history[n-2]);
+      if(!Number.isFinite(value))return {ok:false,message:"Non-finite future projection."};
+      history.push(value);
+      predictions.push({year:points[points.length-1][0]+h,value});
     }
-    return {ok:true,prediction:predictions.at(-1),predictions,rmse,naive,validated:rmse<=naive,holdout};
+    return {ok:true,prediction:predictions[predictions.length-1],predictions,rmse,naive,validated,holdout:errors.length,horizon};
   }
   function setMetric(id,label,value){
     const node=$(id);if(!node)return;
@@ -288,12 +301,12 @@
       if(physical)return loc.name+": model produced an implausible value; forecast withheld.";
       return loc.name+" · "+r.prediction.year+": "+
         fmt(r.prediction.value,2)+" "+meta.unit+
-        " · held-out one-year RMSE "+fmt(r.rmse,2)+" vs naive "+fmt(r.naive,2)+
+        " · held-out "+horizon+"-year RMSE "+fmt(r.rmse,2)+" vs naive "+fmt(r.naive,2)+
         " · "+(r.validated?"beat":"FAILED")+" baseline.";
     });
     $("forecast-output").textContent=
       output.join("\n\n")+
-      "\n\nModel: autoregressive ridge regression. Evaluation uses held-out one-year-ahead estimates; 3–5 year projections have NOT been independently validated. These are scenario-free statistical estimates, not NASA forecasts.";
+      "\n\nModel: autoregressive ridge regression. Evaluation uses rolling-origin, held-out forecasts at the selected 1, 3 or 5-year horizon (at least five historical predictions). These are scenario-free statistical estimates, not NASA forecasts.";
     const valid=forecastResults.filter(({result:r})=>r.ok&&Number.isFinite(r.prediction?.value));
     setMetric("forecast-metric", "EXPERIMENTAL FORECAST · "+horizon+"Y",
       valid.length?valid.length+" location"+(valid.length===1?"":"s")+" estimated · see AI Forecast":"Insufficient reliable data");
