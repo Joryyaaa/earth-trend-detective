@@ -176,7 +176,7 @@
       history.push(pred);
       predictions.push({year:points.at(-1)[0]+h,value:pred});
     }
-    return {ok:true,prediction:predictions.at(-1),rmse,naive,validated:rmse<=naive,holdout};
+    return {ok:true,prediction:predictions.at(-1),predictions,rmse,naive,validated:rmse<=naive,holdout};
   }
   function setMetric(id,label,value){
     const node=$(id);if(!node)return;
@@ -265,6 +265,8 @@
     }));
     const future=forecastResults[0].result;
     window.__earthForecast=future;
+    window.__earthForecastResults=forecastResults;
+    window.__earthAnalyses={groups,slopes,stats,means,variable:v,start,end,temporal};
     const output=forecastResults.map(({loc,result:r})=>{
       if(!r.ok)return loc.name+": forecast unavailable ("+r.message+").";
       const physical=(v==="humidity"&&(r.prediction.value<0||r.prediction.value>100))||
@@ -291,7 +293,7 @@
     message("NASA POWER loaded · "+p1.length+" / "+p2.length+" yearly values");
     window.dispatchEvent(new Event("earth:data-updated"));
   }
-  window.EarthData={getCurrent:()=>({loaded:Boolean(active),locations:active,forecast:window.__earthForecast})};
+  window.EarthData={getCurrent:()=>({loaded:Boolean(active),locations:active,forecast:window.__earthForecast,forecastResults:window.__earthForecastResults,analyses:window.__earthAnalyses})};
   async function load(){
     const seq=++requestSequence;
     $("load-nasa-data").disabled=true;
