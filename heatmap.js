@@ -129,11 +129,11 @@ function draw(id,data,year,variable,low,high){
  g.pointAltitude(.037);
  g.pointLabel(() => "Selected comparison point");
  // Zoom tightly to make the 3x3 local spatial sample visible.
- g.pointOfView({lat:center.lat,lng:center.lng,altitude:.46},1200);
+ g.pointOfView({lat:center.lat,lng:center.lng,altitude:.16},1200);
  const card=$(id==="region1"?"heat-card-1":"heat-card-2");
  if(card){
    card.hidden=false;
-   card.querySelector(".heat-card-title").textContent=(id==="region1"?"EARTH 01":"EARTH 02")+" · "+year+" · "+variable.toUpperCase();
+   card.querySelector(".heat-card-title").textContent=$(id).selectedOptions[0]?.textContent+" · "+year+" · "+variable.toUpperCase();
    card.querySelector(".heat-card-range").textContent=fmt(Math.min(...data.map(d=>d.value)))+
      " – "+fmt(Math.max(...data.map(d=>d.value)))+" "+UNITS[variable]+" (9 nearby samples max)";
    const grid=card.querySelector(".heat-sample-grid");
@@ -194,6 +194,12 @@ async function render(){
 }
 function bind(){
  $("heat-run")?.addEventListener("click",render);
+ document.querySelectorAll("[data-heat-target]").forEach(button=>{
+   button.addEventListener("click",()=>{
+     $("heat-region").value=button.dataset.heatTarget;
+     render();
+   });
+ });
  $("heat-clear")?.addEventListener("click",clearHeat);
  // Avoid showing the wrong year or location after a selection changes.
  for(const id of ["region1","region2","comparison-mode","environment-variable","timeline-year","heat-region","start-year","end-year"]){
