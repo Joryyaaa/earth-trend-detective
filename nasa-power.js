@@ -1,199 +1,325 @@
-/* NASA POWER historical point observations for Earth Trend Detective.
-   Research guide: NASA Data Access (Tabuk pilot), 1981–2025.
-   Annualized monthly NASA POWER data. Point samples, NOT area means. */
+/* Earth Trend Detective: NASA POWER monthly point data.
+   Exploratory Mann–Kendall and ML forecasts; not regional averages or NASA forecasts. */
 (() => {
   "use strict";
-  const START = 1981, END = 2025;
-  const source = "https://power.larc.nasa.gov/api/temporal/monthly/point";
-  const variables = {
-    temperature: { code: "T2M", label: "Near-surface air temperature", unit: "°C" },
-    precipitation: { code: "PRECTOTCORR", label: "Corrected precipitation", unit: "mm/year" },
-    humidity: { code: "RH2M", label: "Relative humidity", unit: "%" },
-    wind: { code: "WS2M", label: "Wind speed at 2 m", unit: "m/s" }
+  const START=1981, END=2025;
+  const SOURCE="https://power.larc.nasa.gov/api/temporal/monthly/point";
+  const vars={
+    temperature:{code:"T2M",name:"Near-surface air temperature",unit:"°C"},
+    precipitation:{code:"PRECTOTCORR",name:"Corrected precipitation",unit:"mm/year"},
+    humidity:{code:"RH2M",name:"Relative humidity",unit:"%"},
+    wind:{code:"WS2M",name:"2 m wind speed",unit:"m/s"}
   };
-  const regionNames = {
-    "28.3838,36.5662": "Tabuk (point)",
-    "24.7,46.7": "Riyadh (point)",
-    "40.7,-74": "New York (point)",
-    "35.7,139.7": "Tokyo (point)",
-    "51.5,-0.1": "London (point)",
-    "-33.9,151.2": "Sydney (point)"
+  const names={
+    "28.3838,36.5662":"Tabuk (point)",
+    "24.7,46.7":"Riyadh (point)",
+    "40.7,-74":"New York (point)",
+    "35.7,139.7":"Tokyo (point)",
+    "51.5,-0.1":"London (point)",
+    "-33.9,151.2":"Sydney (point)"
   };
-  const cache = new Map();
-  let chart = null;
-  let loading = false;
-  const $ = id => document.getElementById(id);
-  const safe = x => Number.isFinite(x) && x > -900 ? x : null;
-  const daysInMonth = (year, month) => new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const status = (text, isError=false) => {
-    const el = $("nasa-data-status");
-    if(el) {
-      el.textContent=text;
-      el.style.color=isError ? "#ffb2b2" : "#c7b8ff";
-    }
-  };
-  const getLocation = id => {
-    const value = $(id).value;
-    const pair = value.split(",").map(Number);
-    return { key:value, lat:pair[0],lon:pair[1],name:regionNames[value]||value };
-  };
-  function requestUrl(loc){
-    const p=new URLSearchParams({
-      parameters: "T2M,PRECTOTCORR,RH2M,WS2M",
-      community:"AG", latitude:String(loc.lat),longitude:String(loc.lon),
-      start:String(START),end:String(END),format:"JSON"
-    });
-    return source+"?"+p.toString();
+  const $=id=>document.getElementById(id);
+  const cache=new Map();
+  let chart=null, active=null, busy=false;
+  const yearsAll=Array.from({length:END-START+1},(_,i)=>START+i);
+  const good=x=>Number.isFinite(x)&&x>-900;
+  const days=(y,m)=>new Date(Date.UTC(y,m,0)).getUTCDate();
+  const fmt=(n,d=2)=>Number.isFinite(n)?n.toFixed(d):"—";
+  const sign=(n,d=3)=>(n>=0?"+":"")+fmt(n,d);
+  function message(str,error=false){
+    const e=$("nasa-data-status");if(e){e.textContent=str;e.style.color=error?"#ffb5b5":"#c9b9ff";}
+  }
+  function location(id){
+    const key=$(id).value;
+    const [lat,lon]=key.split(",").map(Number);
+    return {key,lat,lon,name:names[key]||key};
   }
   function annualize(raw){
     const p=raw?.properties?.parameter;
-    if(!p || typeof p!=="object" || !p.T2M) throw Error("NASA response has no monthly observations.");
-    const yearData={};
-    for(const year of Array.from({length:END-START+1},(_,i)=>START+i)){
-      yearData[year]={};
-      for(const [variable,meta] of Object.entries(variables)){
-        const series=p[meta.code];
-        if(!series) continue;
-        let numerator=0,weight=0,n=0;
-        for(let month=1;month<=12;month++){
-          const key=String(year)+String(month).padStart(2,"0");
-          const val=safe(Number(series[key]));
-          if(val===null)continue;
-          const d=daysInMonth(year,month);
-          numerator+=val*d;
-          weight+=d;
-          n++;
+    if(!p?.T2M)throw Error("NASA did not return expected monthly parameters.");
+    const result={};
+    for(const y of yearsAll){
+      const row={};
+      for(const [v,meta] of Object.entries(vars)){
+        let num=0,den=0,count=0;
+        for(let m=1;m<=12;m++){
+          const val=Number(p[meta.code]?.[String(y)+String(m).padStart(2,"0")]);
+          if(!good(val))continue;
+          const d=days(y,m);
+          num+=val*d;den+=d;count++;
         }
-        // Reject incomplete years rather than implying full annual coverage.
-        if(n!==12) continue;
-        yearData[year][variable]= variable==="precipitation" ? numerator : numerator/weight;
+        if(count===12)row[v]=v==="precipitation"?num:num/den;
       }
+      result[y]=row;
     }
-    return {years:yearData, units:raw?.parameters, sourceUrl:raw?.header?.api_version};
+    return result;
   }
-  function fetchRegion(loc) {
+  function loadLocation(loc){
     if(cache.has(loc.key))return cache.get(loc.key);
-    const p=fetch(requestUrl(loc),{mode:"cors",cache:"default"})
-      .then(async r=>{
-        if(!r.ok)throw Error("NASA POWER returned HTTP "+r.status);
-        const body=await r.json();
-        return annualize(body);
-      }).catch(err=>{cache.delete(loc.key);throw err;});
-    cache.set(loc.key,p);
-    return p;
-  }
-  function populateYears(years){
-    for(const id of ["start-year","end-year"]){
-      const select=$(id);
-      select.innerHTML="";
-      years.forEach(y=>{
-        const opt=document.createElement("option");
-        opt.value=String(y);opt.textContent=String(y);
-        select.append(opt);
-      });
-      select.disabled=false;
-    }
-    $("start-year").value=String(years[0]);
-    $("end-year").value=String(years[years.length-1]);
-  }
-  function linearSlope(points){
-    if(points.length<3)return null;
-    const n=points.length, meanX=points.reduce((a,p)=>a+p[0],0)/n;
-    const meanY=points.reduce((a,p)=>a+p[1],0)/n;
-    const denom=points.reduce((a,p)=>a+(p[0]-meanX)**2,0);
-    return denom>0 ? points.reduce((a,p)=>a+(p[0]-meanX)*(p[1]-meanY),0)/denom : null;
-  }
-  function metric(id,label,text){
-    const el=$(id);
-    if(el) {el.querySelector(".metric-label").textContent=label;el.querySelector(".metric-value").textContent=text;}
-  }
-  function showData(regions){
-    const v=$("environment-variable").value;
-    const meta=variables[v];
-    const first=Number($("start-year").value),last=Number($("end-year").value);
-    if(first>last){status("Start Year must be before End Year.",true);return;}
-    const years=Array.from({length:last-first+1},(_,i)=>first+i);
-    const datasets=regions.map((region,i)=>{
-      const values=years.map(y=>region.data.years[y]?.[v]??null);
-      const pairs=years.flatMap((y,k)=>values[k]===null?[]:[[y,values[k]]]);
-      return {
-        label:region.loc.name,
-        data:values.map(v=>v===null?null:Number(v.toFixed(3))),
-        borderColor:i===0?"#b19aff":"#63d5ed",
-        backgroundColor:i===0?"#b19aff":"#63d5ed",
-        tension:0.15,spanGaps:false,borderWidth:2,pointRadius:2,
-        _slope:linearSlope(pairs),_samples:pairs.length
-      };
+    const query=new URLSearchParams({
+      parameters:"T2M,PRECTOTCORR,RH2M,WS2M",community:"AG",
+      latitude:String(loc.lat),longitude:String(loc.lon),
+      start:String(START),end:String(END),format:"JSON"
     });
-    const slopes=datasets.map(d=>d._slope);
-    const slopeText=slopes.map((s,i)=>s===null?"—":(s>=0?"+":"")+s.toFixed(3)).join(" / ");
-    metric("rate-metric","RATE OF CHANGE (REGION 01 / 02)",slopeText+" "+meta.unit+"/year");
-    metric("significance-metric","STATISTICAL SIGNIFICANCE","Not yet tested");
-    metric("forecast-metric","FUTURE PROJECTION","Not yet validated");
-    const canvas=$("nasa-trend-chart");
+    const p=fetch(SOURCE+"?"+query.toString(),{mode:"cors"})
+      .then(async r=>{if(!r.ok)throw Error("NASA HTTP "+r.status);return annualize(await r.json());})
+      .catch(err=>{cache.delete(loc.key);throw err;});
+    cache.set(loc.key,p);return p;
+  }
+  function fillYears(){
+    const v=$("environment-variable").value;
+    const available=yearsAll.filter(y=>active.some(a=>Number.isFinite(a.data[y]?.[v])));
+    for(const id of ["start-year","end-year"]){
+      const el=$(id),prev=Number(el.value);
+      el.replaceChildren(...available.map(y=>new Option(String(y),String(y))));
+      el.disabled=!available.length;
+      if(available.length)el.value=String(available.includes(prev)?prev:(id==="start-year"?available[0]:available[available.length-1]));
+    }
+  }
+  function sample(region,v,a,b){
+    return yearsAll.filter(y=>y>=a&&y<=b&&Number.isFinite(region.data[y]?.[v]))
+      .map(y=>[y,region.data[y][v]]);
+  }
+  function slope(points){
+    const n=points.length;
+    if(n<3)return null;
+    const mx=points.reduce((s,p)=>s+p[0],0)/n,my=points.reduce((s,p)=>s+p[1],0)/n;
+    const dx=points.reduce((s,p)=>s+(p[0]-mx)**2,0);
+    return dx>0?points.reduce((s,p)=>s+(p[0]-mx)*(p[1]-my),0)/dx:null;
+  }
+  // Normal approximation of the Mann–Kendall S statistic with tie correction.
+  function erf(x){
+    const sg=Math.sign(x);x=Math.abs(x);
+    const t=1/(1+0.3275911*x);
+    const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);
+    return sg*y;
+  }
+  function mk(points){
+    const n=points.length;if(n<10)return {label:"Need ≥10 annual values",p:null,autocorr:null};
+    let S=0;const ys=points.map(p=>p[1]);
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)S+=Math.sign(ys[j]-ys[i]);
+    const counts=new Map();for(const v of ys)counts.set(v,(counts.get(v)||0)+1);
+    let ties=0;for(const t of counts.values())if(t>1)ties+=t*(t-1)*(2*t+5);
+    const variance=(n*(n-1)*(2*n+5)-ties)/18;
+    if(variance<=0)return {label:"No measurable variation",p:null,autocorr:null};
+    const z=S>0?(S-1)/Math.sqrt(variance):S<0?(S+1)/Math.sqrt(variance):0;
+    const p=Math.max(0,Math.min(1,1-erf(Math.abs(z)/Math.SQRT2)));
+    const m=slope(points),intercept=ys[0]-(m??0)*points[0][0];
+    const detrended=points.map(t=>t[1]-((m??0)*t[0]+intercept));
+    const mu=detrended.reduce((a,b)=>a+b,0)/n;
+    const denom=detrended.reduce((s,v)=>s+(v-mu)**2,0);
+    const cov=detrended.slice(1).reduce((s,v,i)=>s+(v-mu)*(detrended[i]-mu),0);
+    const autocorr=denom?cov/denom:0;
+    // Significance is withheld for possible serial dependence.
+    const label=Math.abs(autocorr)>.2
+      ?"Serial correlation: p not reliable"
+      :p<.05?"Significant (exploratory)":"Not significant (exploratory)";
+    return {label,p,autocorr};
+  }
+  function solve(A,b){
+    const n=b.length,M=A.map((row,i)=>[...row,b[i]]);
+    for(let i=0;i<n;i++){
+      let k=i;for(let j=i+1;j<n;j++)if(Math.abs(M[j][i])>Math.abs(M[k][i]))k=j;
+      if(Math.abs(M[k][i])<1e-12)return null;
+      [M[i],M[k]]=[M[k],M[i]];
+      let div=M[i][i];for(let c=i;c<=n;c++)M[i][c]/=div;
+      for(let j=0;j<n;j++){if(j===i)continue;const factor=M[j][i];for(let c=i;c<=n;c++)M[j][c]-=factor*M[i][c];}
+    }
+    return M.map(row=>row[n]);
+  }
+  function fitAR(series){
+    const vals=series.map(p=>p[1]),mu=vals.reduce((s,v)=>s+v,0)/vals.length;
+    const sigma=Math.sqrt(vals.reduce((s,v)=>s+(v-mu)**2,0)/vals.length)||1;
+    const x=[],y=[];
+    for(let i=2;i<vals.length;i++){
+      x.push([1,i/40,(vals[i-1]-mu)/sigma,(vals[i-2]-mu)/sigma]);
+      y.push((vals[i]-mu)/sigma);
+    }
+    const n=4,A=Array.from({length:n},()=>Array(n).fill(0)),b=Array(n).fill(0);
+    for(let i=0;i<x.length;i++)for(let j=0;j<n;j++){
+      b[j]+=x[i][j]*y[i];for(let k=0;k<n;k++)A[j][k]+=x[i][j]*x[i][k];
+    }
+    for(let i=1;i<n;i++)A[i][i]+=.25; // ridge penalty reduces overfitting
+    const w=solve(A,b);
+    if(!w)return null;
+    const predict=(index,lag1,lag2)=>{
+      const features=[1,index/40,(lag1-mu)/sigma,(lag2-mu)/sigma];
+      return mu+sigma*features.reduce((s,v,j)=>s+v*w[j],0);
+    };
+    return {predict};
+  }
+  function forecast(points,horizon){
+    // Require contiguous annual data, no missing years, and an out-of-sample holdout.
+    if(points.length<22)return {ok:false,message:"Need ≥22 complete annual observations."};
+    for(let i=1;i<points.length;i++)if(points[i][0]!==points[i-1][0]+1)return {ok:false,message:"Missing years prevent this autoregressive forecast."};
+    const holdout=Math.min(8,Math.max(5,Math.floor(points.length*.2)));
+    const train=points.slice(0,-holdout);
+    const model=fitAR(train);
+    if(!model)return {ok:false,message:"Model could not be fitted."};
+    let errors=[],baseErrors=[];
+    const y=points.map(p=>p[1]);
+    for(let i=train.length;i<points.length;i++){
+      const pred=model.predict(i,y[i-1],y[i-2]);
+      errors.push((pred-y[i])**2);
+      baseErrors.push((y[i-1]-y[i])**2);
+    }
+    const rmse=Math.sqrt(errors.reduce((a,b)=>a+b,0)/errors.length);
+    const naive=Math.sqrt(baseErrors.reduce((a,b)=>a+b,0)/baseErrors.length);
+    const full=fitAR(points);
+    if(!full||!Number.isFinite(rmse))return {ok:false,message:"Unable to validate the model."};
+    const history=y.slice(),predictions=[];
+    for(let h=1;h<=horizon;h++){
+      const n=history.length;
+      const pred=full.predict(n,history[n-1],history[n-2]);
+      if(!Number.isFinite(pred))return {ok:false,message:"Model produced an invalid forecast."};
+      // Physical limits for annual summaries; not a hard scientific guarantee.
+      history.push((predictions[predictions.length-1]?.value??0)===Infinity?NaN:pred);
+      predictions.push({year:points.at(-1)[0]+h,value:pred});
+    }
+    return {ok:true,prediction:predictions.at(-1),rmse,naive,validated:rmse<=naive,holdout};
+  }
+  function setMetric(id,label,value){
+    const node=$(id);if(!node)return;
+    node.querySelector(".metric-label").textContent=label;
+    node.querySelector(".metric-value").textContent=value;
+  }
+  function setModeUI(){
+    const temporal=$("comparison-mode").value==="periods";
+    $("mode-description").textContent=temporal
+      ?"Compare earlier and later years at one point. Globe textures are NOT historical snapshots."
+      :"Compare two different point locations over identical years.";
+    $("region2").disabled=temporal;
+    $("globe-title-1").textContent=temporal?"Same site · Earlier":"Region 01";
+    $("globe-title-2").textContent=temporal?"Same site · Later":"Region 02";
+    if(temporal){
+      $("region2").value=$("region1").value;
+      $("region2").dispatchEvent(new Event("change"));
+    }
+  }
+  function plot(rows,periodMode,mid,meta){
     if(chart){chart.destroy();chart=null;}
-    const available= datasets.some(d=>d._samples>0);
-    $("chart-empty").hidden=available;
-    canvas.hidden=!available;
-    if(!available){status("No complete annual observations for this selection.",true);return;}
-    if(typeof Chart==="undefined"){status("Chart library unavailable; NASA observations loaded.",true);return;}
-    chart=new Chart(canvas,{
-      type:"line",
-      data:{labels:years,datasets:datasets.map(({_slope,_samples,...rest})=>rest)},
-      options:{
-        maintainAspectRatio:false,responsive:true,
+    const years=yearsAll.filter(y=>y>=Number($("start-year").value)&&y<=Number($("end-year").value));
+    const lines=rows.map((r,i)=>{
+      const values=years.map(y=>{
+        if(periodMode&&(i===0?y>mid:y<=mid))return null;
+        return r.data[y]?.[$("environment-variable").value]??null;
+      });
+      return {label:periodMode?(i===0?"Earlier years":"Later years"):r.loc.name,
+        data:values,borderColor:i===0?"#b19aff":"#63d5ed",
+        backgroundColor:i===0?"#b19aff":"#63d5ed",pointRadius:2,
+        spanGaps:false,borderWidth:2,tension:.2};
+    });
+    const ok=lines.some(l=>l.data.some(Number.isFinite));
+    $("chart-empty").hidden=ok;$("nasa-trend-chart").hidden=!ok;
+    if(!ok||typeof Chart==="undefined")return;
+    chart=new Chart($("nasa-trend-chart"),{
+      type:"line",data:{labels:years,datasets:lines},
+      options:{responsive:true,maintainAspectRatio:false,
         interaction:{mode:"index",intersect:false},
-        plugins:{legend:{labels:{color:"#d9e1f9",boxWidth:12}},tooltip:{callbacks:{label:c=>c.dataset.label+": "+c.formattedValue+" "+meta.unit}}},
-        scales:{
-          x:{ticks:{color:"#9caaca",maxTicksLimit:8},grid:{color:"#ffffff0b"}},
-          y:{title:{display:true,text:meta.unit,color:"#bbc6da"},ticks:{color:"#9caaca"},grid:{color:"#ffffff16"}}
-        }
+        plugins:{legend:{labels:{color:"#d9e1f9",boxWidth:11}},tooltip:{callbacks:{label:c=>c.dataset.label+": "+c.formattedValue+" "+meta.unit}}},
+        scales:{x:{ticks:{color:"#9caaca",maxTicksLimit:8},grid:{color:"#ffffff0b"}},
+          y:{title:{display:true,text:meta.unit,color:"#bbc6da"},ticks:{color:"#9caaca"},grid:{color:"#ffffff16"}}}
       }
     });
-    $("nasa-source-details").textContent=
-      "NASA POWER monthly point data (1981–2025) · "+meta.label+
-      " · "+meta.unit+" · Full 12-month years only · Point samples, not administrative-region averages. "+
-      (v==="precipitation"?"Monthly mean daily precipitation rates were multiplied by the number of days in each month.":"Annual mean weighted by days in each month.")+
-      " Linear slope is descriptive; statistical significance and forecasts are not yet computed.";
-    status("NASA POWER · "+datasets.map(d=>d._samples+" yearly values").join(" / "));
   }
-  let active=null;
-  async function load(){
-    if(loading)return;
-    loading=true;
-    $("load-nasa-data").disabled=true;
-    status("Loading historical observations from NASA POWER…");
-    const pair=[getLocation("region1"),getLocation("region2")];
-    try{
-      const loaded=await Promise.all(pair.map(async loc=>({loc,data:await fetchRegion(loc)})));
-      if(!loaded.every(x=>Object.keys(x.data.years).length>0))throw Error("No data returned");
-      active=loaded;
-      const years=Array.from({length:END-START+1},(_,i)=>START+i).filter(y=>
-        loaded.some(r=>Object.values(r.data.years[y]||{}).length>0));
-      if(!years.length)throw Error("No complete-year observations returned");
-      populateYears(years);
-      showData(loaded);
-    }catch(err){
-      active=null;
-      status("NASA data unavailable. Retry or check network. "+err.message,true);
-      $("nasa-source-details").textContent="No measurements were loaded. Source: "+source+".";
-      $("chart-empty").hidden=false;
-      $("nasa-trend-chart").hidden=true;
-    }finally{
-      loading=false;
-      $("load-nasa-data").disabled=false;
-    }
-  }
-  function bind(){
-    $("load-nasa-data").addEventListener("click",load);
-    for(const id of ["region1","region2"]){$(id).addEventListener("change",load);}
-    $("environment-variable").addEventListener("change",()=>{
-      if(active)showData(active);
+  function display(){
+    if(!active)return;
+    const v=$("environment-variable").value,meta=vars[v];
+    const start=Number($("start-year").value),end=Number($("end-year").value);
+    if(start>end){message("Start year must precede end year.",true);return;}
+    const temporal=$("comparison-mode").value==="periods";
+    const mid=Math.floor((start+end)/2);
+    const p1=sample(active[0],v,start,temporal?mid:end);
+    const p2=sample(active[temporal?0:1],v,temporal?mid+1:start,end);
+    const groups=[p1,p2];
+    const slopes=groups.map(slope),stats=groups.map(mk);
+    const slopesText=slopes.map(n=>n===null?"—":sign(n)).join(" / ");
+    setMetric("rate-metric",temporal?"EARLIER / LATER SLOPE":"REGION 01 / 02 SLOPE",slopesText+" "+meta.unit+"/yr");
+    setMetric("significance-metric","MANN–KENDALL (EXPLORATORY)",
+      stats.map(s=>s.p===null?"—":"p="+fmt(s.p,3)).join(" / "));
+    const means=groups.map(g=>g.length?g.reduce((s,p)=>s+p[1],0)/g.length:null);
+    let interpretation=temporal?
+      "Earlier window: "+start+"–"+mid+"; later window: "+(mid+1)+"–"+end+". "+
+      "Difference in period means: "+(means.every(Number.isFinite)?sign(means[1]-means[0],2)+" "+meta.unit:"not available")+". "
+      :"Matched calendar years allow location-to-location comparison. ";
+    const descriptions=groups.map((g,i)=>{
+      const s=stats[i],trend=slopes[i];
+      return (temporal?(i===0?"Earlier":"Later"):active[i].loc.name)+": "+g.length+" yearly values, slope "+
+        (trend===null?"unavailable":sign(trend)+" "+meta.unit+"/year")+
+        "; "+s.label+(s.p===null?"":" (unadjusted p="+fmt(s.p,3)+", lag-1 autocorr="+fmt(s.autocorr,2)+")")+".";
     });
-    for(const id of ["start-year","end-year"]){
-      $(id).addEventListener("change",()=>{if(active)showData(active);});
+    $("insight-content").textContent="";
+    const strong=document.createElement("strong");strong.textContent=temporal?"Same-site temporal comparison":"Regional comparison";$("insight-content").append(strong);
+    for(const line of [interpretation,...descriptions,
+      "These are NASA POWER grid-point products, not administrative area means. Differences alone do not establish causation.",
+      "Mann–Kendall p-values assume independent annual observations; serial correlation can invalidate them."]) {
+      const p=document.createElement("p");p.textContent=line;$("insight-content").append(p);
     }
-    load();
+    const horizon=Number($("forecast-horizon").value);
+    const target=sample(active[0],v,start,end);
+    const future=forecast(target,horizon);
+    if(future.ok){
+      const r=future,unit=v==="precipitation"?"mm/year":meta.unit;
+      const quality=r.validated?"better than":"worse than";
+      $("forecast-output").textContent=
+        r.prediction.year+" estimated "+meta.name+" at "+active[0].loc.name+": "+
+        fmt(r.prediction.value,2)+" "+unit+". "+
+        "Held-out one-year RMSE "+fmt(r.rmse,2)+" vs persistence baseline "+fmt(r.naive,2)+" ("+quality+" baseline). "+
+        "Validated only for one-step prediction on "+r.holdout+" held-out years; multi-year extrapolation is unvalidated. "+
+        (!r.validated?"Low confidence: model failed the baseline comparison.":"Exploratory forecast, not a climate scenario.");
+      setMetric("forecast-metric","EXPERIMENTAL "+r.prediction.year+" FORECAST",
+        fmt(r.prediction.value,2)+" "+unit+(r.validated?"":" · LOW CONFIDENCE"));
+    }else{
+      $("forecast-output").textContent="Forecast not available: "+future.message;
+      setMetric("forecast-metric","FUTURE PROJECTION","Not enough validated data");
+    }
+    plot(temporal?[active[0],active[0]]:active,temporal,mid,meta);
+    $("nasa-source-details").textContent=
+      "NASA POWER monthly point data · annual complete-year summaries · "+meta.name+
+      " · "+meta.unit+" · "+start+"–"+end+". "+
+      (v==="precipitation"?"Daily precipitation rates multiplied by days per month, then summed by year.":"Monthly means weighted by calendar days.")+
+      " No historical satellite imagery or regional area averages are implied. "+
+      "Statistical p-values are exploratory; forecasting uses an autoregressive ridge model with chronological holdout.";
+    message("NASA POWER loaded · "+p1.length+" / "+p2.length+" yearly values");
   }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind);else bind();
+  async function load(){
+    if(busy)return;
+    busy=true;$("load-nasa-data").disabled=true;
+    message("Requesting NASA POWER point data…");
+    const temporal=$("comparison-mode").value==="periods";
+    const locs=[location("region1"),location(temporal?"region1":"region2")];
+    try{
+      active=await Promise.all(locs.map(async loc=>({loc,data:await loadLocation(loc)})));
+      fillYears();
+      display();
+    }catch(e){
+      active=null;
+      message("NASA POWER unavailable: "+e.message,true);
+      $("nasa-source-details").textContent="Data request failed; no observations shown.";
+      $("forecast-output").textContent="No verified data loaded.";
+      setMetric("significance-metric","TREND SIGNIFICANCE","Awaiting data");
+      setMetric("forecast-metric","FUTURE PROJECTION","Awaiting data");
+      $("chart-empty").hidden=false;$("nasa-trend-chart").hidden=true;
+      if(chart){chart.destroy();chart=null;}
+    }finally{$("load-nasa-data").disabled=false;busy=false;}
+  }
+  function attach(){
+    $("comparison-mode").addEventListener("change",()=>{setModeUI();load();});
+    $("load-nasa-data").addEventListener("click",load);
+    $("region1").addEventListener("change",()=>{
+      if($("comparison-mode").value==="periods"){
+        $("region2").value=$("region1").value;
+        $("region2").dispatchEvent(new Event("change"));
+      }
+      load();
+    });
+    $("region2").addEventListener("change",load);
+    $("environment-variable").addEventListener("change",()=>{if(active){fillYears();display();}});
+    for(const id of ["start-year","end-year","forecast-horizon"]){
+      $(id).addEventListener("change",display);
+    }
+    setModeUI();load();
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",attach);
+  else attach();
 })();
