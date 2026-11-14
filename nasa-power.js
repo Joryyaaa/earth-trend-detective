@@ -256,24 +256,31 @@
       const p=document.createElement("p");p.textContent=line;$("insight-content").append(p);
     }
     const horizon=Number($("forecast-horizon").value);
-    const target=sample(active[0],v,start,end);
-    const future=forecast(target,horizon);
+    // In two-location mode forecast BOTH selected points. In temporal
+    // mode forecast the full series for the selected shared point.
+    const predictionRegions=temporal?[active[0]]:active;
+    const forecastResults=predictionRegions.map(r=>({
+      loc:r.loc,
+      result:forecast(sample(r,v,start,end),horizon)
+    }));
+    const future=forecastResults[0].result;
     window.__earthForecast=future;
-    if(future.ok){
-      const r=future,unit=v==="precipitation"?"mm/year":meta.unit;
-      const quality=r.validated?"better than":"worse than";
-      $("forecast-output").textContent=
-        r.prediction.year+" estimated "+meta.name+" at "+active[0].loc.name+": "+
-        fmt(r.prediction.value,2)+" "+unit+". "+
-        "Held-out one-year RMSE "+fmt(r.rmse,2)+" vs persistence baseline "+fmt(r.naive,2)+" ("+quality+" baseline). "+
-        "Validated only for one-step prediction on "+r.holdout+" held-out years; multi-year extrapolation is unvalidated. "+
-        (!r.validated?"Low confidence: model failed the baseline comparison.":"Exploratory forecast, not a climate scenario.");
-      setMetric("forecast-metric","EXPERIMENTAL "+r.prediction.year+" FORECAST",
-        fmt(r.prediction.value,2)+" "+unit+(r.validated?"":" · LOW CONFIDENCE"));
-    }else{
-      $("forecast-output").textContent="Forecast not available: "+future.message;
-      setMetric("forecast-metric","FUTURE PROJECTION","Not enough validated data");
-    }
+    const output=forecastResults.map(({loc,result:r})=>{
+      if(!r.ok)return loc.name+": forecast unavailable ("+r.message+").";
+      const physical=(v==="humidity"&&(r.prediction.value<0||r.prediction.value>100))||
+        ((v==="precipitation"||v==="wind")&&r.prediction.value<0);
+      if(physical)return loc.name+": model produced an implausible value; forecast withheld.";
+      return loc.name+" · "+r.prediction.year+": "+
+        fmt(r.prediction.value,2)+" "+meta.unit+
+        " · held-out one-year RMSE "+fmt(r.rmse,2)+" vs naive "+fmt(r.naive,2)+
+        " · "+(r.validated?"beat":"FAILED")+" baseline.";
+    });
+    $("forecast-output").textContent=
+      output.join("\n\n")+
+      "\n\nModel: autoregressive ridge regression. Evaluation uses held-out one-year-ahead estimates; 3–5 year projections have NOT been independently validated. These are scenario-free statistical estimates, not NASA forecasts.";
+    const valid=forecastResults.filter(({result:r})=>r.ok&&Number.isFinite(r.prediction?.value));
+    setMetric("forecast-metric", "EXPERIMENTAL FORECAST · "+horizon+"Y",
+      valid.length?valid.length+" location"+(valid.length===1?"":"s")+" estimated · see AI Forecast":"Insufficient reliable data");
     plot(temporal?[active[0],active[0]]:active,temporal,mid,meta);
     $("nasa-source-details").textContent=
       "NASA POWER monthly point data · annual complete-year summaries · "+meta.name+
