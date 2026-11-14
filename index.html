@@ -186,6 +186,44 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .heat-limits{display:flex;justify-content:space-between;margin-top:5px;color:#bbc6db;font-size:10px}
 @media(min-width:761px){.dashboard{min-height:800px}.sidebar{gap:9px;padding-top:12px}.timeline-panel{max-height:270px}}
 @media(max-width:760px){#time-travel-card .timeline-readings{grid-template-columns:1fr!important}.heatmap-controls{max-width:100%}}
+
+/* Cinematic temporal observatory: globe-like visual indicators, not historical imagery */
+#time-travel-card.cinematic-time{padding:13px 18px 11px!important;max-height:none!important;overflow:hidden!important;background:radial-gradient(ellipse at 50% 35%,#25244e 0%,#0b1027 72%)!important}
+.cinematic-time .timeline-heading{position:relative;z-index:2}
+.cinematic-time .timeline-heading strong{letter-spacing:1.8px!important;font-size:13px!important}
+.timeline-emph{color:#bda4f6;font-weight:500}
+.time-orbit-stage{--orb-phase:0deg;position:relative;height:212px;margin:5px auto 0;overflow:hidden;border-radius:16px;background:radial-gradient(ellipse at center,#2c27555e,transparent 57%),radial-gradient(circle at 15% 18%,#a991ff77 1px,transparent 2px),radial-gradient(circle at 82% 70%,#6adfff66 1px,transparent 2px)}
+.orbit-grid{position:absolute;inset:0;background:linear-gradient(90deg,#ffffff09 1px,transparent 1px),linear-gradient(#ffffff08 1px,transparent 1px);background-size:36px 36px;mask-image:radial-gradient(ellipse,black,transparent 85%)}
+.orbit-path{position:absolute;left:50%;top:48%;width:72%;height:76%;border:1px solid #9783fc55;border-radius:50%;transform:translate(-50%,-50%) rotate(-16deg);box-shadow:0 0 16px #6f60de20}
+.orbit-path-b{width:84%;height:48%;transform:translate(-50%,-50%) rotate(15deg);border-color:#55c8eb55}
+.year-beacon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;width:128px;height:128px;border:1px solid #cbb1ff8c;border-radius:50%;background:radial-gradient(circle at 40% 35%,#302b72,#111331 70%);box-shadow:0 0 24px #9370ff68,inset 0 0 28px #9380ff35}
+.year-beacon:after{content:"";position:absolute;inset:-9px;border-radius:50%;border:1px dashed #a9a2f16b;animation:year-ring-spin 34s linear infinite}
+.year-beacon span{font-size:8px;color:#c5b8f7;letter-spacing:1.4px}
+.year-beacon strong{font-size:36px!important;color:#fff!important;line-height:1.15!important;text-shadow:0 0 22px #c19bff}
+.year-beacon small{font-size:9px;color:#98d9f1;letter-spacing:1px}
+.time-planet{position:absolute;top:45%;width:96px;height:96px;z-index:2;border-radius:50%;overflow:hidden;box-shadow:inset -22px -10px 25px #010519,0 0 25px #8870ff7a;border:1px solid #bda9ff5c;transition:filter .4s ease,transform .55s ease}
+.time-planet-a{left:11%}.time-planet-b{right:11%;box-shadow:inset -22px -10px 25px #010519,0 0 27px #5ad7ed6b}
+.time-planet-surface{position:absolute;inset:0;border-radius:50%;background-image:radial-gradient(circle at 32% 27%,#ffffff2c,transparent 40%),url("https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg");background-size:auto,235% 120%;background-position:center,40% 50%;box-shadow:inset -20px -8px 23px #060719,inset 9px 4px 17px #c2cdff4a}
+.time-planet-b .time-planet-surface{background-position:center,72% 50%}
+.time-orbit-satellite{position:absolute;left:50%;top:48%;width:12px;height:12px;border:2px solid white;background:#a884ff;border-radius:50%;z-index:4;box-shadow:0 0 18px 5px #9976ffb2;transform:translate(-50%,-50%) rotate(var(--orb-phase)) translateX(200px)}
+.time-value{position:absolute;z-index:4;bottom:3px;width:26%;border:1px solid #ffffff20;border-radius:10px;padding:7px 11px;background:#0d1530dc;backdrop-filter:blur(8px)}
+.time-value-a{left:1%}.time-value-b{right:1%}
+.time-value span{font-size:9px;letter-spacing:1px;color:#c9bbff;display:block}
+.time-value-b span{color:#80e2ec}
+.time-value strong{font-size:16px;color:#fff;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.time-value-track{height:5px;margin-top:5px;border-radius:8px;background:#ffffff19;overflow:hidden}
+.time-value-track>div{height:100%;width:0;border-radius:8px;background:#b59bff;transition:width .35s}
+#timeline-fill-2{background:#70d8ee}
+.time-travel-controller{padding-top:2px}
+.cinematic-time .timeline-boundaries{font-size:10px!important;letter-spacing:1px!important}
+.cinematic-time #timeline-sparkline{height:56px!important;background:none!important}
+.cinematic-time #timeline-year{margin:7px 0 0!important}
+.cinematic-time #timeline-play{border-radius:24px!important;padding:8px 15px!important}
+.cinematic-time .timeline-context{font-size:9px!important}
+@keyframes year-ring-spin{to{transform:rotate(360deg)}}
+@media(max-width:1100px){.time-planet{width:72px;height:72px}.time-planet-a{left:8%}.time-planet-b{right:8%}.time-orbit-satellite{display:none}.year-beacon{width:104px;height:104px}.year-beacon strong{font-size:29px!important}.time-value{width:32%}}
+@media(max-width:580px){.time-orbit-stage{height:200px}.time-planet{width:52px;height:52px;top:24%}.time-planet-a{left:10%}.time-planet-b{right:10%}.time-value{width:44%}.year-beacon{top:40%;width:92px;height:92px}.time-value strong{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.year-beacon:after{animation:none}.time-planet,.time-value-track>div{transition:none}}
 </style>
 </head>
 <body>
@@ -259,21 +297,28 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             </div>
           </article>
         </section>
-        <section class="timeline-panel panel" id="time-travel-card" aria-label="Interactive Time Travel">
+        <section class="timeline-panel panel cinematic-time" id="time-travel-card" aria-label="Visual Time Travel Observatory">
           <div class="timeline-heading">
-            <div><div class="label">◉ TIME TRAVEL · NASA HISTORICAL DATA</div><strong>Watch the environment change</strong></div>
-            <div class="timeline-head-actions"><span id="timeline-current-year" class="timeline-current">—</span><button type="button" id="timeline-play" disabled aria-label="Play timeline">▶ Play</button></div>
+            <div><div class="label">◉ TEMPORAL OBSERVATORY · NASA POWER</div><strong>TIME TRAVEL <span class="timeline-emph">/ EARTH IN MOTION</span></strong></div>
+            <div class="timeline-head-actions"><button type="button" id="timeline-play" disabled aria-label="Play timeline">▶ PLAY HISTORY</button></div>
           </div>
-          <div class="timeline-visual">
-            <canvas id="timeline-sparkline" aria-label="Historical time series for both selected locations"></canvas>
-            <div class="timeline-ruler"><span id="timeline-first-year">Start</span><span id="timeline-last-year">End</span></div>
+          <div class="time-orbit-stage" id="time-orbit-stage">
+            <div class="orbit-grid" aria-hidden="true"></div>
+            <div class="orbit-path orbit-path-a" aria-hidden="true"></div>
+            <div class="orbit-path orbit-path-b" aria-hidden="true"></div>
+            <div class="time-planet time-planet-a" id="time-planet-1" aria-hidden="true"><div class="time-planet-surface"></div></div>
+            <div class="time-planet time-planet-b" id="time-planet-2" aria-hidden="true"><div class="time-planet-surface"></div></div>
+            <div class="year-beacon"><span>HISTORICAL FRAME</span><strong id="timeline-current-year">—</strong><small id="timeline-variable">NASA DATA</small></div>
+            <div class="time-orbit-satellite" id="time-orbit-marker" aria-hidden="true"></div>
+            <div class="time-value time-value-a"><span id="timeline-reading-1-label">EARTH 01</span><strong id="timeline-reading-1">—</strong><div class="time-value-track"><div id="timeline-fill-1"></div></div></div>
+            <div class="time-value time-value-b"><span id="timeline-reading-2-label">EARTH 02</span><strong id="timeline-reading-2">—</strong><div class="time-value-track"><div id="timeline-fill-2"></div></div></div>
+          </div>
+          <div class="time-travel-controller">
+            <div class="timeline-boundaries"><span id="timeline-first-year">1981</span><span>DRAG THE YEAR · WATCH THE TWO REGIONS</span><span id="timeline-last-year">2025</span></div>
             <input type="range" id="timeline-year" min="1981" max="2025" value="2025" disabled aria-label="Selected historical year">
+            <canvas id="timeline-sparkline" aria-label="Real annual time-series trajectories for two locations"></canvas>
           </div>
-          <div class="timeline-readings">
-            <div class="timeline-row first"><div class="timeline-data"><span id="timeline-reading-1-label">Region 01</span><strong id="timeline-reading-1">Waiting for NASA data</strong></div><div class="timeline-track"><div id="timeline-fill-1" class="timeline-fill first"></div></div></div>
-            <div class="timeline-row second"><div class="timeline-data"><span id="timeline-reading-2-label">Region 02</span><strong id="timeline-reading-2">Waiting for NASA data</strong></div><div class="timeline-track"><div id="timeline-fill-2" class="timeline-fill second"></div></div></div>
-          </div>
-          <p id="timeline-context" class="timeline-context">Yearly observed/model-derived NASA POWER point values. Earth textures are not historical satellite snapshots.</p>
+          <p id="timeline-context" class="timeline-context">The illuminated spheres are an artistic comparison of real annual point values, not historical satellite imagery.</p>
         </section>
         <section class="lower-strip" aria-label="Summary metrics">
           <article class="panel metric" id="rate-metric"><div class="metric-label">RATE OF CHANGE</div><div class="metric-value">Awaiting data</div></article>
