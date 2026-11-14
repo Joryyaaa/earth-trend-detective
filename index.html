@@ -122,6 +122,20 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .assistant-form input{flex:1;min-width:0;background:#0a1325;border:1px solid #786ba1;color:#eff0fc;padding:12px;border-radius:9px;font:inherit;font-size:12px}
 .assistant-form button{background:#8760c9;border:0;color:#fff;border-radius:9px;padding:0 15px;font-weight:700}
 .assistant-disclosure{font-size:10px;color:#7e91af;line-height:1.5;margin-bottom:0}
+
+.ask-ai-workspace{display:flex;flex-direction:column;flex:1;min-height:0;padding:23px;overflow:hidden;border-color:#8c7aca77;background:linear-gradient(145deg,#171532,#0c1327)}
+.ask-ai-workspace[hidden]{display:none!important}
+.ask-ai-toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:1px solid #ffffff18;padding:16px 0}
+.ask-ai-toolbar strong{font-size:24px;color:#eee7ff}
+.ask-ai-toolbar p{font-size:12px;color:#a2afd0;margin:7px 0}
+.ask-ai-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ask-ai-actions button{padding:9px 12px;border:1px solid #9a87c466;border-radius:10px;background:#261f44;color:#e6dafa;font-size:12px}
+.ask-ai-actions button:disabled{opacity:.4;cursor:not-allowed}
+.ask-ai-workspace .assistant-log{min-height:160px;flex:1;padding:18px 6px;overflow:auto}
+.ask-ai-workspace .assistant-bubble{max-width:80%;font-size:13px}
+.ask-ai-workspace .assistant-form input{font-size:14px}
+.ask-ai-workspace .assistant-suggestions button{font-size:12px}
+@media(max-width:760px){.ask-ai-workspace{min-height:540px;padding:17px}.ask-ai-workspace .assistant-bubble{max-width:95%}}
 </style>
 </head>
 <body>
@@ -137,7 +151,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
       <button type="button" class="navbutton" data-view="trends" aria-pressed="false"><span class="symbol">⌁</span> Trends</button>
       <button type="button" class="navbutton" data-view="insights" aria-pressed="false"><span class="symbol">✧</span> Insights</button>
       <button type="button" class="navbutton" data-view="forecast" aria-pressed="false"><span class="symbol">✦</span> AI Forecast</button>
-      <button type="button" class="navbutton" data-view="assistant" aria-pressed="false"><span class="symbol">◉</span> Data Assistant</button>
+      <button type="button" class="navbutton" data-view="assistant" aria-pressed="false"><span class="symbol">◉</span> Ask AI</button>
     </div>
     <div class="side-divider"></div>
     <div class="label">COMPARISON MODE</div>
@@ -199,7 +213,6 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
           <button type="button" class="active" data-tab="trends" aria-pressed="true">Trends</button>
           <button type="button" data-tab="insights" aria-pressed="false">Insights</button>
           <button type="button" data-tab="forecast" aria-pressed="false">Forecast</button>
-          <button type="button" data-tab="assistant" aria-pressed="false">Ask Data</button>
         </div>
         <div class="tab-body" id="panel-trends">
           <div class="chart-box" id="chart-container"><div id="chart-empty"><div class="visual">⌁</div><strong>Historical Trend Comparison</strong><p>Loading verified observations from NASA POWER, or select Refresh to retry.</p></div><canvas id="nasa-trend-chart" hidden></canvas></div>
@@ -219,8 +232,11 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             <p class="forecast-caution">Model estimates, not NASA predictions. Climate scenarios, extremes and external drivers are not represented.</p>
           </div>
         </div>
-        <div class="tab-body" id="panel-assistant" hidden>
-          <div class="assistant-intro">SCIENCE COPILOT · DATA-GROUNDED ANSWERS</div>
+      </section>
+    </div>
+        <section class="ask-ai-workspace panel" id="ask-ai-workspace" hidden aria-label="Ask AI data assistant">
+          <div class="assistant-intro">ASK AI · SCIENTIFIC DATA COPILOT</div>
+          <div class="ask-ai-toolbar"><div><strong>Ask AI</strong><p>Explore current NASA measurements, differences, trends and forecasts</p></div><div class="ask-ai-actions"><button type="button" id="assistant-undo" disabled title="Undo last chat change">↶ Undo</button><button type="button" id="assistant-delete-last" title="Remove last question and answer">Delete last</button><button type="button" id="assistant-clear" title="Clear chat history">Clear chat</button></div></div>
           <div id="assistant-log" class="assistant-log" aria-live="polite"></div>
           <div class="assistant-suggestions">
             <button type="button" data-question="Compare these locations">Compare</button>
@@ -232,10 +248,8 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             <input id="assistant-input" placeholder="Ask about trends or forecasts…" aria-label="Ask the data assistant" autocomplete="off">
             <button type="submit">Send</button>
           </form>
-          <p class="assistant-disclosure">Guided analytical assistant using your selected NASA observations, not an open-ended LLM.</p>
-        </div>
-      </section>
-    </div>
+          <p class="assistant-disclosure">Guided answers computed from NASA POWER data. This is not a general-purpose AI chat service. Clearing chat does not delete NASA data.</p>
+</section>
     <div class="dashboard-footer">NASA POWER POINT DATA · NOT REGIONAL AVERAGES · EXPLORATORY RESEARCH DASHBOARD</div>
   </main>
 </div>
@@ -302,6 +316,8 @@ window.addEventListener("resize", () => {
 
 function switchPanel(tab) {
   const active = tab === "overview" ? "trends" : tab;
+  document.querySelector(".content-grid").hidden = tab === "assistant";
+  document.getElementById("ask-ai-workspace").hidden = tab !== "assistant";
   const dashboard = document.querySelector(".dashboard");
   dashboard.dataset.activeView = tab;
   document.querySelectorAll("[data-tab]").forEach(b => {
