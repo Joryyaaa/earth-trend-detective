@@ -27,6 +27,7 @@ function baseMarker(id){
 function cleanGlobe(id){
  const g=globes[id]();
  g.polygonsData([]);
+ if(g.heatmapsData)g.heatmapsData([]);
  g.pointsData([baseMarker(id)]);
  g.pointColor(() => "#ffe7a8");
  g.pointRadius(.55);
@@ -109,48 +110,51 @@ async function collect(id,year,variable,token){
  return output;
 }
 function draw(id,data,year,variable,low,high){
- const g=globes[id](),center=point(id);
- const range=Math.max(high-low,.0001);
- const cells=data.map(p=>{
-  const t=(p.value-low)/range;
-  return {...p,kind:"sample",poly:{type:"Polygon",coordinates:[bounds(p.lat,p.lng)]},color:palette(t)};
+ const globe=globes[id](),center=point(id);
+ const range=Math.max(high-low,0.0001);
+ // Globe.GL native Gaussian heatmap: smooth surface-fitted layer, no extruded polygons.
+ // Weight represents the normalized measured point value on one SHARED scale.
+ const points=data.map(p=>({
+   lat:p.lat,lng:p.lng,value:p.value,
+   weight:Math.max(0.045,(p.value-low)/range)
+ }));
+ globe.polygonsData([]); // remove ALL legacy large polygon artifacts
+ globe.heatmapPoints("points");
+ globe.heatmapPointLat("lat");
+ globe.heatmapPointLng("lng");
+ globe.heatmapPointWeight("weight");
+ globe.heatmapBandwidth(.43);
+ globe.heatmapBaseAltitude(.007);
+ globe.heatmapColorSaturation(1);
+ globe.heatmapColorFn(t=>{
+   const intensity=Math.max(0,Math.min(1,t));
+   const col=palette(intensity);
+   return col.replace("rgb(","rgba(").replace(")",","+(intensity*0.82).toFixed(2)+")");
  });
- g.polygonsData(cells);
- g.polygonGeoJsonGeometry("poly");
- g.polygonCapColor(d=>d.color.replace("rgb","rgba").replace(")",",0.72)"));
- g.polygonSideColor(()=>"rgba(40,18,100,0.25)");
- g.polygonStrokeColor(()=>"rgba(255,255,255,.52)");
- g.polygonAltitude(.023);
- g.polygonLabel(d=>"<div style='background:#10162b;color:white;padding:8px;border-radius:8px'>"+
-    year+" · NASA point sample<br>"+fmt(d.value)+" "+UNITS[variable]+"</div>");
- g.pointsData([{...center,kind:"selected"}]);
- g.pointRadius(.28);
- g.pointColor(() => "#ffffff");
- g.pointAltitude(.037);
- g.pointLabel(() => "Selected comparison point");
- // Zoom tightly to make the 3x3 local spatial sample visible.
- g.pointOfView({lat:center.lat,lng:center.lng,altitude:.16},1200);
+ globe.heatmapsTransitionDuration(750);
+ globe.heatmapsData([{points}]);
+ globe.pointsData([{...center,kind:"selected"}]);
+ globe.pointRadius(.12);
+ globe.pointColor(() => "#ffffff");
+ globe.pointAltitude(.025);
+ globe.pointLabel(() => "Selected NASA POWER point");
+ globe.pointOfView({lat:center.lat,lng:center.lng,altitude:.65},850);
  const card=$(id==="region1"?"heat-card-1":"heat-card-2");
  if(card){
    card.hidden=false;
-   card.querySelector(".heat-card-title").textContent=$(id).selectedOptions[0]?.textContent+" · "+year+" · "+variable.toUpperCase();
-   card.querySelector(".heat-card-range").textContent=fmt(Math.min(...data.map(d=>d.value)))+
-     " – "+fmt(Math.max(...data.map(d=>d.value)))+" "+UNITS[variable]+" (9 nearby samples max)";
+   card.querySelector(".heat-card-title").textContent=$(id).selectedOptions[0]?.textContent+" · "+year;
+   card.querySelector(".heat-card-range").textContent=
+     "Nearby NASA values: "+fmt(Math.min(...data.map(d=>d.value)))+
+     "–"+fmt(Math.max(...data.map(d=>d.value)))+" "+UNITS[variable];
    const grid=card.querySelector(".heat-sample-grid");
    if(grid){
      grid.replaceChildren();
-     // Keep row/column order stable: south-to-north, west-to-east.
-     const byCoords=[...data].sort((a,b)=>b.lat-a.lat||a.lng-b.lng);
-     byCoords.forEach(p=>{
-       const tile=document.createElement("div");
-       tile.className="heat-sample-tile";
-       tile.style.backgroundColor=palette((p.value-low)/Math.max(high-low,.0001));
-       tile.title=p.lat.toFixed(3)+"°, "+p.lng.toFixed(3)+"° · NASA POWER "+fmt(p.value)+" "+UNITS[variable];
-       const span=document.createElement("span");span.textContent=fmt(p.value);
-       tile.append(span);grid.append(tile);
-     });
+     const explanation=document.createElement("span");
+     explanation.className="heat-visual-explanation";
+     explanation.textContent="Smooth display interpolated from "+data.length+
+       " actual NASA POWER points · same colors on both Earths";
+     grid.appendChild(explanation);
    }
-
  }
  overlays[id]={year,variable};
 }
@@ -187,7 +191,7 @@ async function render(){
    $("heat-min").textContent=fmt(low)+" "+UNITS[variable];
    $("heat-max").textContent=fmt(high)+" "+UNITS[variable];
    status(panels.map(p=>(p.id==="region1"?"Earth 01":"Earth 02")+": "+p.points.length+" valid samples").join(" · ")+
-     ". Same color scale across both Earths. Translucent cells depict point samples, not fully measured surfaces.");
+     ". Smooth Gaussian interpolation is visual only; source contains point samples, not a measured continuous surface.");
  }catch(e){
    if(token===activeToken)status("NASA heat layer could not load: "+e.message,true);
  }finally{if(token===activeToken)$("heat-run").disabled=false;}
