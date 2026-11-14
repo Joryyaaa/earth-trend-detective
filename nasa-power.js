@@ -260,7 +260,7 @@
       const s=stats[i],trend=slopes[i];
       return (temporal?(i===0?"Earlier":"Later"):active[i].loc.name)+": "+g.length+" yearly values, slope "+
         (trend===null?"unavailable":sign(trend)+" "+meta.unit+"/year")+
-        "; "+s.label+(s.p===null?"":" (unadjusted p="+fmt(s.p,3)+", lag-1 autocorr="+fmt(s.autocorr,2)+")")+".";
+        "; Theil–Sen "+(senSlopes[i]===null?"unavailable":sign(senSlopes[i]*10,3)+" "+meta.unit+"/decade")+"; "+s.label+(s.p===null?"":" (unadjusted "+pText(s.p)+", lag-1 autocorr="+fmt(s.autocorr,2)+")")+".";
     });
     $("insight-content").textContent="";
     const strong=document.createElement("strong");strong.textContent=temporal?"Same-site temporal comparison":"Regional comparison";$("insight-content").append(strong);
@@ -280,7 +280,7 @@
     const future=forecastResults[0].result;
     window.__earthForecast=future;
     window.__earthForecastResults=forecastResults;
-    window.__earthAnalyses={groups,slopes,stats,means,variable:v,start,end,temporal};
+    window.__earthAnalyses={groups,slopes,senSlopes,stats,means,variable:v,start,end,temporal};
     const output=forecastResults.map(({loc,result:r})=>{
       if(!r.ok)return loc.name+": forecast unavailable ("+r.message+").";
       const physical=(v==="humidity"&&(r.prediction.value<0||r.prediction.value>100))||
