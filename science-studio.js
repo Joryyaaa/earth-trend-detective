@@ -113,8 +113,8 @@
      "NASA POWER monthly meteorological point products, aggregated into complete calendar-year summaries. "+
      "These are point estimates, not administrative-region means. Mann–Kendall significance is exploratory "+
      "and unadjusted for serial correlation. Autoregressive ridge forecasts were evaluated using "+
-     "chronological one-step held-out years; multi-year horizons and uncertainty bounds are not "+
-     "independently validated. No historical Earth image or spatial interpolation is a direct "+
+     "rolling-origin historical holdouts at the selected 1, 3 or 5-year horizon. Prediction "+
+     "intervals and future accuracy are not guaranteed. No historical Earth image or spatial interpolation is a direct "+
      "satellite measurement. Source: https://power.larc.nasa.gov/"));
  }
  function printReport(){
