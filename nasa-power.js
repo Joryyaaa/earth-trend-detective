@@ -307,9 +307,9 @@
     $("forecast-output").textContent=
       output.join("\n\n")+
       "\n\nModel: autoregressive ridge regression. Evaluation uses rolling-origin, held-out forecasts at the selected 1, 3 or 5-year horizon (at least five historical predictions). These are scenario-free statistical estimates, not NASA forecasts.";
-    const valid=forecastResults.filter(({result:r})=>r.ok&&Number.isFinite(r.prediction?.value));
+    const valid=forecastResults.filter(({result:r})=>r.ok&&r.validated&&Number.isFinite(r.prediction?.value));
     setMetric("forecast-metric", "EXPERIMENTAL FORECAST · "+horizon+"Y",
-      valid.length?valid.length+" location"+(valid.length===1?"":"s")+" estimated · see AI Forecast":"Insufficient reliable data");
+      valid.length?valid.length+" location"+(valid.length===1?"":"s")+" passed backtest · see AI Forecast":"No forecasts passed the baseline check");
     plot(temporal?[active[0],active[0]]:active,temporal,mid,meta);
     $("nasa-source-details").textContent=
       "NASA POWER monthly point data · annual complete-year summaries · "+meta.name+
