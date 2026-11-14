@@ -117,7 +117,7 @@ function draw(id,data,year,variable,low,high){
  const patches=data.map(p=>{
    const color=palette(high===low ? .5 : (p.value-low)/range);
    return {
-     geometry:{type:"Polygon",coordinates:[bounds(p.lat,p.lng,.22,.28)]},
+     geometry:{type:"Polygon",coordinates:[bounds(p.lat,p.lng,.22,.28).reverse()]},
      color:color.replace("rgb(","rgba(").replace(")",",0.8)"),
      label:fmt(p.value)+" "+UNITS[variable]
    };
