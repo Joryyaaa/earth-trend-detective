@@ -248,9 +248,10 @@ function createEarth(elementId, lat, lng) {
 
   const globe = new Globe(container, { animateIn: false })
     .globeImageUrl(EARTH_IMAGE)
+    .showGraticules(true)
     .backgroundColor("rgba(0,0,0,0)")
     .showAtmosphere(true)
-    .atmosphereColor("#8e84ee")
+    .atmosphereColor("#9f8bff")
     .atmosphereAltitude(0.16)
     .pointsData([{ lat, lng, size: 1 }])
     .pointLat("lat")
