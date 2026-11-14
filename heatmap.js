@@ -136,6 +136,21 @@ function draw(id,data,year,variable,low,high){
    card.querySelector(".heat-card-title").textContent=(id==="region1"?"EARTH 01":"EARTH 02")+" · "+year+" · "+variable.toUpperCase();
    card.querySelector(".heat-card-range").textContent=fmt(Math.min(...data.map(d=>d.value)))+
      " – "+fmt(Math.max(...data.map(d=>d.value)))+" "+UNITS[variable]+" (9 nearby samples max)";
+   const grid=card.querySelector(".heat-sample-grid");
+   if(grid){
+     grid.replaceChildren();
+     // Keep row/column order stable: south-to-north, west-to-east.
+     const byCoords=[...data].sort((a,b)=>b.lat-a.lat||a.lng-b.lng);
+     byCoords.forEach(p=>{
+       const tile=document.createElement("div");
+       tile.className="heat-sample-tile";
+       tile.style.backgroundColor=palette((p.value-low)/Math.max(high-low,.0001));
+       tile.title=p.lat.toFixed(3)+"°, "+p.lng.toFixed(3)+"° · NASA POWER "+fmt(p.value)+" "+UNITS[variable];
+       const span=document.createElement("span");span.textContent=fmt(p.value);
+       tile.append(span);grid.append(tile);
+     });
+   }
+
  }
  overlays[id]={year,variable};
 }
