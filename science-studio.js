@@ -96,6 +96,8 @@
      makeLine(pane,"Theil–Sen trend",a.senSlopes?.[i]!=null?fmt(a.senSlopes[i]*10,3)+" "+unit+"/decade":"Not available");
      const test=a.stats[i];
      makeLine(pane,"Mann–Kendall (exploratory)",test?.p!=null?(test.p<0.001?"p < 0.001":"p="+fmt(test.p,3))+" · "+test.label:"Not available");
+     if(test?.p!=null)makeLine(pane,"Trend direction",a.senSlopes?.[i]>0?"Increasing":a.senSlopes?.[i]<0?"Decreasing":"No detected slope");
+     if(test?.autocorr!=null&&Math.abs(test.autocorr)>0.2)makeLine(pane,"Statistical caution","Serial correlation flagged; unadjusted p-value is not reliable");
      root.append(pane);
    });
    const forecasts=state.forecastResults||[];
