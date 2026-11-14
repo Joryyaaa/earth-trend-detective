@@ -72,6 +72,14 @@ select:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:1100px){.dashboard{grid-template-columns:185px minmax(0,1fr)}.content-grid{grid-template-columns:minmax(0,1fr) 255px}.workspace{padding:14px}.lower-strip{gap:7px}.metric{padding:11px}.sidebar{padding:19px 10px}}
 @media(max-width:760px){.dashboard{height:auto;min-height:100vh;grid-template-columns:1fr;grid-template-rows:62px auto 1fr}.topbar{padding:0 14px}.sidebar{border-right:0;border-bottom:1px solid var(--stroke);padding:12px;gap:10px;overflow:visible}.sidebar-nav{display:flex;gap:5px}.navbutton{padding:9px;justify-content:center}.navbutton .symbol{display:none}.sidebar .spacer,.sidebar .side-divider,.sidebar-note{display:none}.data-sidebar-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.data-sidebar-controls label{min-width:0}.workspace{overflow:visible}.content-grid{grid-template-columns:1fr}.globe-grid{min-height:410px}.globe{min-height:230px}.insights{min-height:350px}.dashboard-footer{text-align:center}}
 @media(max-width:450px){.topmeta{display:none}.globe-grid{grid-template-columns:1fr}.globe{height:230px;flex:none}.lower-strip{grid-template-columns:1fr}.tag{display:none}.data-sidebar-controls{grid-template-columns:1fr}}
+
+.load-nasa-button{background:#574388;border:1px solid #a894ec;color:#fff;border-radius:11px;padding:11px;text-align:center;font-size:12px}
+.load-nasa-button:disabled{opacity:.55;cursor:wait}
+.nasa-status{color:#c5b7ff;font-size:11px;line-height:1.5;min-height:32px;word-break:break-word}
+#chart-container{position:relative;overflow:hidden}
+#chart-empty{display:flex;align-items:center;justify-content:center;flex-direction:column}
+#nasa-trend-chart{height:100%!important;width:100%!important}
+.source-details{font-size:10px;color:#9daac3;line-height:1.55;margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -91,11 +99,13 @@ select:disabled{opacity:.55;cursor:not-allowed}
     <div class="label">DATA EXPLORER</div>
     <div class="data-sidebar-controls">
       <label><span class="side-label">Environmental Factor</span>
-        <select id="environment-variable"><option value="temperature">Temperature (°C)</option><option value="precipitation">Precipitation (mm)</option><option value="humidity">Relative Humidity (%)</option></select>
+        <select id="environment-variable"><option value="temperature">Temperature (°C)</option><option value="precipitation">Precipitation (mm)</option><option value="humidity">Relative Humidity (%)</option><option value="wind">Wind Speed (m/s)</option></select>
       </label>
       <label><span class="side-label">Start Year</span><select id="start-year" disabled><option>Awaiting dataset</option></select></label>
       <label><span class="side-label">End Year</span><select id="end-year" disabled><option>Awaiting dataset</option></select></label>
     </div>
+    <button id="load-nasa-data" type="button" class="load-nasa-button">↻ Refresh NASA observations</button>
+    <div id="nasa-data-status" class="nasa-status" role="status">NASA data not loaded yet.</div>
     <div class="spacer"></div>
     <div class="sidebar-note"><span style="color:#c5b7ff">● DATA PENDING</span><br>Controls and visualizations are ready for verified observations. No sample measurements are shown.</div>
   </aside>
@@ -109,7 +119,7 @@ select:disabled{opacity:.55;cursor:not-allowed}
             <div id="globe1" class="globe"></div>
             <div class="globe-footer">
               <select id="region1" aria-label="Region 01">
-                <option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74">New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
+                <option value="28.3838,36.5662" selected>Tabuk, Saudi Arabia (pilot)</option><option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74">New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
               </select><p>Drag to rotate · Scroll to zoom</p>
             </div>
           </article>
@@ -124,9 +134,9 @@ select:disabled{opacity:.55;cursor:not-allowed}
           </article>
         </section>
         <section class="lower-strip" aria-label="Summary metrics">
-          <article class="panel metric"><div class="metric-label">RATE OF CHANGE</div><div class="metric-value">Awaiting data</div></article>
-          <article class="panel metric"><div class="metric-label">TREND SIGNIFICANCE</div><div class="metric-value">Awaiting analysis</div></article>
-          <article class="panel metric"><div class="metric-label">FUTURE PROJECTION</div><div class="metric-value">Awaiting model</div></article>
+          <article class="panel metric" id="rate-metric"><div class="metric-label">RATE OF CHANGE</div><div class="metric-value">Awaiting data</div></article>
+          <article class="panel metric" id="significance-metric"><div class="metric-label">TREND SIGNIFICANCE</div><div class="metric-value">Awaiting analysis</div></article>
+          <article class="panel metric" id="forecast-metric"><div class="metric-label">FUTURE PROJECTION</div><div class="metric-value">Awaiting model</div></article>
         </section>
       </div>
       <section class="panel insights" aria-label="Analysis workspace">
@@ -138,7 +148,8 @@ select:disabled{opacity:.55;cursor:not-allowed}
           <button type="button" data-tab="forecast" aria-pressed="false">Forecast</button>
         </div>
         <div class="tab-body" id="panel-trends">
-          <div class="chart-box"><div class="visual">⌁</div><strong>Historical Trend Comparison</strong><p>Annual measurements and charts appear here when validated NASA observations are connected.</p></div>
+          <div class="chart-box" id="chart-container"><div id="chart-empty"><div class="visual">⌁</div><strong>Historical Trend Comparison</strong><p>Loading verified observations from NASA POWER, or select Refresh to retry.</p></div><canvas id="nasa-trend-chart" hidden></canvas></div>
+          <p id="nasa-source-details" class="source-details">NASA POWER point measurements will be shown with their source and aggregation details.</p>
           <div class="legend"><span><i class="dot"></i>Region 01</span><span><i class="dot cyan"></i>Region 02</span></div>
         </div>
         <div class="tab-body" id="panel-insights" hidden>
@@ -183,7 +194,7 @@ function createEarth(elementId, lat, lng) {
   return globe;
 }
 
-const earth1 = createEarth("globe1", 24.7, 46.7);
+const earth1 = createEarth("globe1", 28.3838, 36.5662);
 const earth2 = createEarth("globe2", 40.7, -74);
 
 function changeRegion(selectId, globe) {
@@ -247,5 +258,7 @@ function resizeEarthPanels() {
 }
 window.addEventListener("load", resizeEarthPanels);
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="nasa-power.js"></script>
 </body>
 </html>
