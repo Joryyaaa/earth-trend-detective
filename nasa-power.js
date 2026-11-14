@@ -20,7 +20,7 @@
   };
   const $=id=>document.getElementById(id);
   const cache=new Map();
-  let chart=null, active=null, busy=false;
+  let chart=null, active=null, requestSequence=0;
   const yearsAll=Array.from({length:END-START+1},(_,i)=>START+i);
   const good=x=>Number.isFinite(x)&&x>-900;
   const days=(y,m)=>new Date(Date.UTC(y,m,0)).getUTCDate();
@@ -173,7 +173,7 @@
       const pred=full.predict(n,history[n-1],history[n-2]);
       if(!Number.isFinite(pred))return {ok:false,message:"Model produced an invalid forecast."};
       // Physical limits for annual summaries; not a hard scientific guarantee.
-      history.push((predictions[predictions.length-1]?.value??0)===Infinity?NaN:pred);
+      history.push(pred);
       predictions.push({year:points.at(-1)[0]+h,value:pred});
     }
     return {ok:true,prediction:predictions.at(-1),rmse,naive,validated:rmse<=naive,holdout};
@@ -236,7 +236,7 @@
     const slopesText=slopes.map(n=>n===null?"—":sign(n)).join(" / ");
     setMetric("rate-metric",temporal?"EARLIER / LATER SLOPE":"REGION 01 / 02 SLOPE",slopesText+" "+meta.unit+"/yr");
     setMetric("significance-metric","MANN–KENDALL (EXPLORATORY)",
-      stats.map(s=>s.p===null?"—":"p="+fmt(s.p,3)).join(" / "));
+      stats.map(st=>st.p===null?"—":Math.abs(st.autocorr)>.2?"Correlation warning":"p="+fmt(st.p,3)).join(" / "));
     const means=groups.map(g=>g.length?g.reduce((s,p)=>s+p[1],0)/g.length:null);
     let interpretation=temporal?
       "Earlier window: "+start+"–"+mid+"; later window: "+(mid+1)+"–"+end+". "+
@@ -258,6 +258,7 @@
     const horizon=Number($("forecast-horizon").value);
     const target=sample(active[0],v,start,end);
     const future=forecast(target,horizon);
+    window.__earthForecast=future;
     if(future.ok){
       const r=future,unit=v==="precipitation"?"mm/year":meta.unit;
       const quality=r.validated?"better than":"worse than";
@@ -281,18 +282,23 @@
       " No historical satellite imagery or regional area averages are implied. "+
       "Statistical p-values are exploratory; forecasting uses an autoregressive ridge model with chronological holdout.";
     message("NASA POWER loaded · "+p1.length+" / "+p2.length+" yearly values");
+    window.dispatchEvent(new Event("earth:data-updated"));
   }
+  window.EarthData={getCurrent:()=>({loaded:Boolean(active),locations:active,forecast:window.__earthForecast})};
   async function load(){
-    if(busy)return;
-    busy=true;$("load-nasa-data").disabled=true;
+    const seq=++requestSequence;
+    $("load-nasa-data").disabled=true;
     message("Requesting NASA POWER point data…");
     const temporal=$("comparison-mode").value==="periods";
     const locs=[location("region1"),location(temporal?"region1":"region2")];
     try{
-      active=await Promise.all(locs.map(async loc=>({loc,data:await loadLocation(loc)})));
+      const latest=await Promise.all(locs.map(async loc=>({loc,data:await loadLocation(loc)})));
+      if(seq!==requestSequence)return;
+      active=latest;
       fillYears();
       display();
     }catch(e){
+      if(seq!==requestSequence)return;
       active=null;
       message("NASA POWER unavailable: "+e.message,true);
       $("nasa-source-details").textContent="Data request failed; no observations shown.";
@@ -301,7 +307,7 @@
       setMetric("forecast-metric","FUTURE PROJECTION","Awaiting data");
       $("chart-empty").hidden=false;$("nasa-trend-chart").hidden=true;
       if(chart){chart.destroy();chart=null;}
-    }finally{$("load-nasa-data").disabled=false;busy=false;}
+    }finally{if(seq===requestSequence)$("load-nasa-data").disabled=false;}
   }
   function attach(){
     $("comparison-mode").addEventListener("change",()=>{setModeUI();load();});
