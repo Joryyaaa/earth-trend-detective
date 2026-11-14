@@ -224,6 +224,15 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 @media(max-width:1100px){.time-planet{width:72px;height:72px}.time-planet-a{left:8%}.time-planet-b{right:8%}.time-orbit-satellite{display:none}.year-beacon{width:104px;height:104px}.year-beacon strong{font-size:29px!important}.time-value{width:32%}}
 @media(max-width:580px){.time-orbit-stage{height:200px}.time-planet{width:52px;height:52px;top:24%}.time-planet-a{left:10%}.time-planet-b{right:10%}.time-value{width:44%}.year-beacon{top:40%;width:92px;height:92px}.time-value strong{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.year-beacon:after{animation:none}.time-planet,.time-value-track>div{transition:none}}
+
+.globe-heat-panel{display:flex;flex-direction:column;gap:3px;margin:4px 12px;padding:10px 12px;background:linear-gradient(100deg,#342551d9,#0f2542d9);border:1px solid #8a76f18c;border-radius:11px;box-shadow:0 0 20px #7d64e733;position:relative;z-index:2}
+.globe-heat-panel[hidden]{display:none!important}
+.globe-heat-panel .heat-card-title{font-size:10px;color:#e5d7ff;letter-spacing:1.3px}
+.globe-heat-panel .heat-card-range{font-size:12px;color:#e2f6ff}
+.heatmap-controls .heat-status{word-wrap:break-word}
+.heatmap-controls .heat-color-gradient{height:13px;box-shadow:0 0 13px #9274dd55}
+.heatmap-controls #heat-run{font-weight:800;letter-spacing:.6px;box-shadow:0 0 16px #8952e244}
+.planet{isolation:isolate}
 </style>
 </head>
 <body>
@@ -264,11 +273,11 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
     <div class="heatmap-controls">
       <div class="label">◉ SPATIAL HEAT LAYER</div>
       <label class="side-label" for="heat-region">Globe to color</label>
-      <select id="heat-region" aria-label="Choose globe for heatmap"><option value="region1">Earth 01</option><option value="region2">Earth 02</option></select>
-      <button type="button" id="heat-run" class="heat-run">✦ Generate NASA Heatmap</button>
+      <select id="heat-region" aria-label="Choose globe for heatmap"><option value="both" selected>Both Earths · compare</option><option value="region1">Earth 01 only</option><option value="region2">Earth 02 only</option></select>
+      <button type="button" id="heat-run" class="heat-run">✦ SHOW SPATIAL DATA</button>
       <button type="button" id="heat-clear" class="heat-clear" disabled>Remove heat layer</button>
       <div class="heat-legend" id="heat-legend" hidden><div class="heat-color-gradient"></div><div class="heat-limits"><span id="heat-min">Low</span><span id="heat-max">High</span></div></div>
-      <p id="heat-status" class="heat-status" role="status">9 real NASA POWER grid-point samples · not a continuous satellite image</p>
+      <p id="heat-status" class="heat-status" role="status">9 point samples around each selected site · one shared comparison scale</p>
     </div>
     <div class="spacer"></div>
     <div class="sidebar-note"><span style="color:#c5b7ff">◉ NASA POWER · POINT DATA</span><br>Click a globe to inspect a point. Markers indicate locations, not historic satellite imagery.</div>
@@ -280,7 +289,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
         <section class="globe-grid" aria-label="Two interactive Earth globes">
           <article class="panel planet">
             <div class="section-header"><strong id="globe-title-1">Region 01</strong><small>● INTERACTIVE EARTH</small></div>
-            <div id="globe1" class="globe"></div><div id="globe-inspect-1" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
+            <div id="globe1" class="globe"></div><div id="heat-card-1" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 01</strong><span class="heat-card-range">NASA POWER</span></div><div id="globe-inspect-1" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region1" aria-label="Region 01">
                 <option value="28.3838,36.5662" selected>Tabuk, Saudi Arabia (pilot)</option><option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74">New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
@@ -289,7 +298,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
           </article>
           <article class="panel planet">
             <div class="section-header"><strong id="globe-title-2">Region 02</strong><small>● INTERACTIVE EARTH</small></div>
-            <div id="globe2" class="globe"></div><div id="globe-inspect-2" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
+            <div id="globe2" class="globe"></div><div id="heat-card-2" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 02</strong><span class="heat-card-range">NASA POWER</span></div><div id="globe-inspect-2" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region2" aria-label="Region 02">
                 <option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74" selected>New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
@@ -479,7 +488,7 @@ document.querySelectorAll("[data-view], [data-tab]").forEach(button => {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="nasa-power.js?v=62e7ff01"></script>
 <script src="data-assistant.js?v=cfd27b72"></script>
-<script src="timeline.js?v=f8c818ba"></script>
-<script src="heatmap.js?v=b47c9123"></script>
+<script src="timeline.js?v=046f794e"></script>
+<script src="heatmap.js?v=5d0ea2f3"></script>
 </body>
 </html>
