@@ -36,6 +36,24 @@
     [["timeline-fill-1",a],["timeline-fill-2",b]].forEach(([id,v])=>{
       const el=$(id);if(el)el.style.width=width(v)+"%";
     });
+    const stage=$("time-orbit-stage");
+    if(stage){
+      const phase=(activeYear-start)/Math.max(1,end-start);
+      stage.style.setProperty("--orb-phase",(phase*340-170).toFixed(1)+"deg");
+      const yearVariable=$("timeline-variable");
+      if(yearVariable)yearVariable.textContent=variable.toUpperCase();
+      const left=$("time-planet-1"),right=$("time-planet-2");
+      // Make both visual spheres move with the selected frame.
+      [left,right].forEach((el,i)=>{
+        if(!el)return;
+        const val=i===0?a:b;
+        const intensity=Number.isFinite(val)?(val-min)/span:.35;
+        el.style.filter="saturate("+(0.8+intensity*1.5).toFixed(2)+") brightness("+(0.7+intensity*.6).toFixed(2)+")";
+        el.style.transform="translateY("+(-Math.sin(phase*Math.PI*2+i*1.1)*10).toFixed(1)+"px) rotate("+((phase*24)*(i===0?1:-1)).toFixed(1)+"deg)";
+        const surface=el.querySelector(".time-planet-surface");
+        if(surface)surface.style.backgroundPosition="center,"+((phase*120+i*45)%100).toFixed(1)+"% 50%";
+      });
+    }
     const canvas=$("timeline-sparkline");
     if(!canvas)return;
     const rect=canvas.getBoundingClientRect();
