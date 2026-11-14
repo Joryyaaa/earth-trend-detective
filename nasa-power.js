@@ -101,7 +101,7 @@
     return slopes.length%2?slopes[mid]:(slopes[mid-1]+slopes[mid])/2;
   }
   function pText(p){return p<0.001?"p < 0.001":"p="+fmt(p,3);}
-  // Normal approximation of the Mann–Kendall S statistic with tie correction.
+  // Normal approximation of Mann–Kendall S with tie correction, without continuity correction.
   function erf(x){
     const sg=Math.sign(x);x=Math.abs(x);
     const t=1/(1+0.3275911*x);
@@ -116,7 +116,7 @@
     let ties=0;for(const t of counts.values())if(t>1)ties+=t*(t-1)*(2*t+5);
     const variance=(n*(n-1)*(2*n+5)-ties)/18;
     if(variance<=0)return {label:"No measurable variation",p:null,autocorr:null};
-    const z=S>0?(S-1)/Math.sqrt(variance):S<0?(S+1)/Math.sqrt(variance):0;
+    const z=S/Math.sqrt(variance); // no continuity correction; matches SciPy kendalltau asymptotic p
     const p=Math.max(0,Math.min(1,1-erf(Math.abs(z)/Math.SQRT2)));
     const m=slope(points),intercept=ys[0]-(m??0)*points[0][0];
     const detrended=points.map(t=>t[1]-((m??0)*t[0]+intercept));
