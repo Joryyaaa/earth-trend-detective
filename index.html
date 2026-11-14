@@ -20,7 +20,6 @@ button{cursor:pointer}
 .topmeta b{border:1px solid #5a4c86;padding:8px 12px;border-radius:20px;color:#cabdff;font-weight:500}
 .sidebar{min-height:0;background:#0b1020c9;border-right:1px solid var(--stroke);padding:25px 15px;display:flex;flex-direction:column;gap:17px;overflow:auto}
 .label{font-size:10px;letter-spacing:2px;color:var(--purple);font-weight:750}
-.sidebar-nav{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
 .navbutton{width:100%;display:flex;align-items:center;gap:12px;border:1px solid transparent;border-radius:11px;padding:13px;text-align:left;background:transparent;color:#aab4cf;font-size:13px}
 .navbutton.active{background:#66549b32;color:#f7f0ff;border-color:#a18bfc55}
 .navbutton:hover{border-color:#ffffff30}
@@ -72,7 +71,7 @@ select:disabled{opacity:.55;cursor:not-allowed}
 .dashboard-footer{font-size:10px;color:#7283a6;text-align:right;flex-shrink:0}
 [hidden]{display:none!important}
 @media(max-width:1100px){.dashboard{grid-template-columns:185px minmax(0,1fr)}.content-grid{grid-template-columns:minmax(0,1fr) 255px}.workspace{padding:14px}.lower-strip{gap:7px}.metric{padding:11px}.sidebar{padding:19px 10px}}
-@media(max-width:760px){.dashboard{height:auto;min-height:100vh;grid-template-columns:1fr;grid-template-rows:62px auto 1fr}.topbar{padding:0 14px}.sidebar{border-right:0;border-bottom:1px solid var(--stroke);padding:12px;gap:10px;overflow:visible}.sidebar-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:5px}.navbutton{padding:9px;min-height:44px;justify-content:center}.navbutton .symbol{display:none}.sidebar .spacer,.sidebar .side-divider,.sidebar-note{display:none}.data-sidebar-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.data-sidebar-controls label{min-width:0}.workspace{overflow:visible}.content-grid{grid-template-columns:1fr}.globe-grid{min-height:410px}.globe{min-height:230px}.insights{min-height:350px}.dashboard-footer{text-align:center}}
+@media(max-width:760px){.dashboard{height:auto;min-height:100vh;grid-template-columns:1fr;grid-template-rows:62px auto 1fr}.topbar{padding:0 14px}.sidebar{border-right:0;border-bottom:1px solid var(--stroke);padding:12px;gap:10px;overflow:visible}.navbutton{padding:9px;min-height:44px;justify-content:center}.navbutton .symbol{display:none}.sidebar .spacer,.sidebar .side-divider,.sidebar-note{display:none}.data-sidebar-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.data-sidebar-controls label{min-width:0}.workspace{overflow:visible}.content-grid{grid-template-columns:1fr}.globe-grid{min-height:410px}.globe{min-height:230px}.insights{min-height:350px}.dashboard-footer{text-align:center}}
 @media(max-width:450px){.topmeta{display:none}.globe-grid{grid-template-columns:1fr}.globe{height:230px;flex:none}.lower-strip{grid-template-columns:1fr}.tag{display:none}.data-sidebar-controls{grid-template-columns:1fr}}
 
 .load-nasa-button{background:#574388;border:1px solid #a894ec;color:#fff;border-radius:11px;padding:11px;text-align:center;font-size:12px}
@@ -297,6 +296,22 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .report-small{font-size:12px;color:#53627d;line-height:1.7}
 @media(max-width:830px){.lab-results{grid-template-columns:1fr}.studio-page{padding:18px}}
 @media print{body *{visibility:hidden!important}#report-preview,#report-preview *{visibility:visible!important}#report-preview{position:absolute;left:0;top:0;max-width:none;width:100%;border:0;box-shadow:none;background:#fff!important;color:#111!important}}
+.dashboard{grid-template-rows:70px auto minmax(0,1fr)}
+.mission-nav{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;background:#0a0e1c;border-bottom:1px solid var(--stroke)}
+.mission-nav .navbutton{width:auto;min-height:44px;padding:8px 12px;white-space:nowrap}
+.mission-nav .symbol{display:none}
+.globe-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.globe{position:relative;min-width:0;overflow:hidden}
+.globe-heat-panel{flex-shrink:0}
+@media(max-width:760px){
+  .dashboard{grid-template-rows:62px auto auto 1fr}
+  .mission-nav .navbutton{flex:1 0 auto}
+  .globe-grid .globe{min-height:270px}
+}
+@media(max-width:450px){
+  .globe-grid{grid-template-columns:minmax(0,1fr)}
+  .globe-grid .globe{min-height:230px}
+}
 </style>
 </head>
 <body>
@@ -305,8 +320,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
     <div class="brand">✦ EARTH<span> / </span>DETECTIVE</div>
     <div class="topmeta"><span>EARTH INTELLIGENCE PLATFORM</span><b>NASA SPACE APPS 2026</b></div>
   </header>
-  <aside class="sidebar" aria-label="Dashboard navigation">
-    <nav class="sidebar-nav" aria-labelledby="mission-navigation-title">
+    <nav class="mission-nav" aria-label="Mission navigation">
       <button type="button" class="navbutton active" data-view="overview" aria-pressed="true"><span class="symbol">◈</span> Overview</button>
       <button type="button" class="navbutton" data-view="trends" aria-pressed="false"><span class="symbol">⌁</span> Trends</button>
       <button type="button" class="navbutton" data-view="insights" aria-pressed="false"><span class="symbol">✧</span> Insights</button>
@@ -315,7 +329,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
       <button type="button" class="navbutton" data-view="reports" aria-pressed="false"><span class="symbol">▤</span> Report Studio</button>
       <button type="button" class="navbutton" data-view="assistant" aria-pressed="false"><span class="symbol">◉</span> Ask AI</button>
     </nav>
-    <div class="label" id="mission-navigation-title">MISSION NAVIGATION</div>
+  <aside class="sidebar" aria-label="Data and heatmap controls">
     <div class="side-divider"></div>
     <div class="label">COMPARISON MODE</div>
     <label class="mode-control"><span class="side-label">What to compare?</span>
@@ -357,7 +371,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
         <section class="globe-grid" aria-label="Two interactive Earth globes">
           <article class="panel planet">
             <div class="section-header"><strong id="globe-title-1">Region 01</strong><small>● INTERACTIVE EARTH</small></div>
-            <div id="globe1" class="globe"></div><div id="heat-card-1" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 01</strong><span class="heat-card-range">NASA POWER</span><div class="heat-sample-grid" aria-label="Nine sampled NASA POWER cells"></div></div><div id="globe-inspect-1" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
+            <div id="globe1" class="globe"></div><div id="heat-card-1" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 01</strong><span class="heat-card-range">NASA POWER</span></div><div id="globe-inspect-1" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region1" aria-label="Region 01">
                 <option value="28.3838,36.5662" selected>Tabuk, Saudi Arabia (pilot)</option><option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74">New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
@@ -366,7 +380,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
           </article>
           <article class="panel planet">
             <div class="section-header"><strong id="globe-title-2">Region 02</strong><small>● INTERACTIVE EARTH</small></div>
-            <div id="globe2" class="globe"></div><div id="heat-card-2" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 02</strong><span class="heat-card-range">NASA POWER</span><div class="heat-sample-grid" aria-label="Nine sampled NASA POWER cells"></div></div><div id="globe-inspect-2" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
+            <div id="globe2" class="globe"></div><div id="heat-card-2" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 02</strong><span class="heat-card-range">NASA POWER</span></div><div id="globe-inspect-2" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region2" aria-label="Region 02">
                 <option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74" selected>New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
@@ -514,17 +528,6 @@ function changeRegion(selectId, globe) {
 changeRegion("region1", earth1);
 changeRegion("region2", earth2);
 
-window.addEventListener("resize", () => {
-  for (const [id, globe] of [
-    ["globe1", earth1],
-    ["globe2", earth2]
-  ]) {
-    const el = document.getElementById(id);
-    globe.width(el.clientWidth);
-    globe.height(el.clientHeight);
-  }
-});
-
 function switchPanel(tab) {
   const isAnalysisView = ["trends", "insights", "forecast"].includes(tab);
   document.querySelector(".center-column").hidden = tab !== "overview";
@@ -560,22 +563,23 @@ document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click"
 function resizeEarthPanels() {
   for (const [id, globe] of [["globe1", earth1], ["globe2", earth2]]) {
     const target = document.getElementById(id);
-    if (globe && target) {
-      globe.width(target.clientWidth);
-      globe.height(target.clientHeight);
+    if (target.clientWidth && target.clientHeight) {
+      if (globe.width() !== target.clientWidth) globe.width(target.clientWidth);
+      if (globe.height() !== target.clientHeight) globe.height(target.clientHeight);
     }
   }
 }
 window.addEventListener("load", resizeEarthPanels);
-document.querySelectorAll("[data-view], [data-tab]").forEach(button => {
-  button.addEventListener("click", () => window.setTimeout(resizeEarthPanels, 60));
-});
+const globeResizeObserver = new ResizeObserver(resizeEarthPanels);
+for (const id of ["globe1", "globe2"]) {
+  globeResizeObserver.observe(document.getElementById(id));
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="nasa-power.js?v=3e7d1220"></script>
 <script src="data-assistant.js?v=cfd27b72"></script>
 <script src="timeline.js?v=046f794e"></script>
-<script src="heatmap.js?v=0d44582d"></script>
+<script src="heatmap.js?v=spatial-patches-1"></script>
 <script src="science-studio.js?v=017643d1"></script>
 </body>
 </html>
