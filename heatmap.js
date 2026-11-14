@@ -27,11 +27,11 @@ function baseMarker(id){
 function cleanGlobe(id){
  const g=globes[id]();
  g.polygonsData([]);
- if(g.heatmapsData)g.heatmapsData([]);
  g.pointsData([baseMarker(id)]);
  g.pointColor(() => "#ffe7a8");
  g.pointRadius(.55);
  g.pointAltitude(.022);
+ g.pointOfView({...point(id),altitude:2.3},450);
 }
 function clearHeat(){
  activeToken++;
@@ -51,7 +51,7 @@ function getAnnual(raw,year,v){
  if(!monthly)return null;
  let sum=0,daysTotal=0,count=0;
  for(let m=1;m<=12;m++){
-   const x=Number(monthly[year+String(m).padStart(2,"0")]);
+   const x=monthly[year+String(m).padStart(2,"0")];
    if(!valid(x))continue;
    const d=days(year,m);sum+=x*d;daysTotal+=d;count++;
  }
@@ -62,7 +62,7 @@ async function sample(lat,lng,year,variable){
  const key=[lat.toFixed(4),lng.toFixed(4),year,variable].join("|");
  if(cache.has(key))return cache.get(key);
  const p=new URLSearchParams({parameters:CODES[variable],community:"AG",latitude:String(lat),longitude:String(lng),start:String(year),end:String(year),format:"JSON"});
- const promise=fetch(API+"?"+p,{mode:"cors"}).then(async response=>{
+ const promise=fetch(API+"?"+p,{mode:"cors",signal:AbortSignal.timeout(10000)}).then(async response=>{
    if(!response.ok)throw new Error("NASA HTTP "+response.status);
    return getAnnual(await response.json(),year,variable);
  }).catch(err=>{cache.delete(key);throw err;});
@@ -104,6 +104,7 @@ async function collect(id,year,variable,token){
  for(let i=0;i<samplePoints.length;i+=3){
   if(token!==activeToken)return null;
   const batch=await Promise.allSettled(samplePoints.slice(i,i+3).map(async p=>({...p,value:await sample(p.lat,p.lng,year,variable)})));
+  if(token!==activeToken)return null;
   for(const entry of batch)if(entry.status==="fulfilled"&&valid(entry.value.value))output.push(entry.value);
   status("Retrieving NASA "+(id==="region1"?"Earth 01":"Earth 02")+" observations: "+Math.min(i+3,9)+"/9 points…");
  }
@@ -111,34 +112,29 @@ async function collect(id,year,variable,token){
 }
 function draw(id,data,year,variable,low,high){
  const globe=globes[id](),center=point(id);
- const range=Math.max(high-low,0.0001);
- // Globe.GL native Gaussian heatmap: smooth surface-fitted layer, no extruded polygons.
- // Weight represents the normalized measured point value on one SHARED scale.
- const points=data.map(p=>({
-   lat:p.lat,lng:p.lng,value:p.value,
-   weight:Math.max(0.045,(p.value-low)/range)
- }));
- globe.polygonsData([]); // remove ALL legacy large polygon artifacts
- globe.heatmapPoints("points");
- globe.heatmapPointLat("lat");
- globe.heatmapPointLng("lng");
- globe.heatmapPointWeight("weight");
- globe.heatmapBandwidth(.43);
- globe.heatmapBaseAltitude(.007);
- globe.heatmapColorSaturation(1);
- globe.heatmapColorFn(t=>{
-   const intensity=Math.max(0,Math.min(1,t));
-   const col=palette(intensity);
-   return col.replace("rgb(","rgba(").replace(")",","+(intensity*0.82).toFixed(2)+")");
+ const range=high-low;
+ // Draw only the nine sampled patches, close to the globe surface.
+ const patches=data.map(p=>{
+   const color=palette(high===low ? .5 : (p.value-low)/range);
+   return {
+     geometry:{type:"Polygon",coordinates:[bounds(p.lat,p.lng,.22,.28)]},
+     color:color.replace("rgb(","rgba(").replace(")",",0.8)"),
+     label:fmt(p.value)+" "+UNITS[variable]
+   };
  });
- globe.heatmapsTransitionDuration(750);
- globe.heatmapsData([{points}]);
+ globe.controls().autoRotate=false;
+ globe.polygonAltitude(.002);
+ globe.polygonCapColor("color");
+ globe.polygonSideColor(()=>"rgba(0,0,0,0)");
+ globe.polygonLabel("label");
+ globe.polygonsTransitionDuration(0);
+ globe.polygonsData(patches);
  globe.pointsData([{...center,kind:"selected"}]);
  globe.pointRadius(.12);
  globe.pointColor(() => "#ffffff");
  globe.pointAltitude(.025);
  globe.pointLabel(() => "Selected NASA POWER point");
- globe.pointOfView({lat:center.lat,lng:center.lng,altitude:.65},850);
+ globe.pointOfView({lat:center.lat,lng:center.lng,altitude:.19},650);
  const card=$(id==="region1"?"heat-card-1":"heat-card-2");
  if(card){
    card.hidden=false;
@@ -146,15 +142,7 @@ function draw(id,data,year,variable,low,high){
    card.querySelector(".heat-card-range").textContent=
      "Nearby NASA values: "+fmt(Math.min(...data.map(d=>d.value)))+
      "–"+fmt(Math.max(...data.map(d=>d.value)))+" "+UNITS[variable];
-   const grid=card.querySelector(".heat-sample-grid");
-   if(grid){
-     grid.replaceChildren();
-     const explanation=document.createElement("span");
-     explanation.className="heat-visual-explanation";
-     explanation.textContent="Smooth display interpolated from "+data.length+
-       " actual NASA POWER points · same colors on both Earths";
-     grid.appendChild(explanation);
-   }
+
  }
  overlays[id]={year,variable};
 }
@@ -174,7 +162,7 @@ async function render(){
    for(const id of ids){
      const points=await collect(id,year,variable,token);
      if(token!==activeToken)return;
-     if(!points||points.length<4)throw new Error("Insufficient NASA samples for "+id+".");
+     if(!points||points.length<4)throw new Error("Too few NASA observations for "+(id==="region1"?"Earth 01":"Earth 02")+". Try again or select another year.");
      panels.push({id,points});
    }
    if(token!==activeToken)return;
@@ -191,7 +179,7 @@ async function render(){
    $("heat-min").textContent=fmt(low)+" "+UNITS[variable];
    $("heat-max").textContent=fmt(high)+" "+UNITS[variable];
    status(panels.map(p=>(p.id==="region1"?"Earth 01":"Earth 02")+": "+p.points.length+" valid samples").join(" · ")+
-     ". Smooth Gaussian interpolation is visual only; source contains point samples, not a measured continuous surface.");
+     ". Colors show sampled values on one scale.");
  }catch(e){
    if(token===activeToken)status("NASA heat layer could not load: "+e.message,true);
  }finally{if(token===activeToken)$("heat-run").disabled=false;}
@@ -207,11 +195,11 @@ function bind(){
  $("heat-clear")?.addEventListener("click",clearHeat);
  // Avoid showing the wrong year or location after a selection changes.
  for(const id of ["region1","region2","comparison-mode","environment-variable","timeline-year","heat-region","start-year","end-year"]){
-   $(id)?.addEventListener("change",()=>{if(Object.keys(overlays).length)clearHeat();});
+   $(id)?.addEventListener("change",()=>{if($("heat-run").disabled || Object.keys(overlays).length)clearHeat();});
  }
  // During playback, mark any spatial layer as out of date instead of
  // pretending it animates historic gridded surfaces.
- $("timeline-year")?.addEventListener("input",()=>{if(Object.keys(overlays).length)clearHeat();});
+ $("timeline-year")?.addEventListener("input",()=>{if($("heat-run").disabled || Object.keys(overlays).length)clearHeat();});
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind);else bind();
 })();
