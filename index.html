@@ -343,7 +343,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
     <div class="label">DATA EXPLORER</div>
     <div class="data-sidebar-controls">
       <label><span class="side-label">Environmental Factor</span>
-        <select id="environment-variable"><option value="temperature">Temperature (°C)</option><option value="precipitation">Precipitation (mm)</option><option value="humidity">Relative Humidity (%)</option><option value="wind">Wind Speed (m/s)</option></select>
+        <select id="environment-variable"><option value="temperature">Temperature (°C)</option><option value="precipitation">Precipitation (mm)</option><option value="humidity">Relative Humidity (%)</option><option value="wind">Wind Speed (m/s)</option><option value="maximumTemperature">Maximum Temperature (°C)</option><option value="minimumTemperature">Minimum Temperature (°C)</option><option value="solarIrradiance">Solar Irradiance (MJ/m²/day)</option></select>
       </label>
       <label><span class="side-label">Start Year</span><select id="start-year" disabled><option>Awaiting dataset</option></select></label>
       <label><span class="side-label">End Year</span><select id="end-year" disabled><option>Awaiting dataset</option></select></label>
@@ -374,7 +374,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             <div id="globe1" class="globe"></div><div id="heat-card-1" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 01</strong><span class="heat-card-range">NASA POWER</span></div><div id="globe-inspect-1" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region1" aria-label="Region 01">
-                <option value="28.3838,36.5662" selected>Tabuk, Saudi Arabia (pilot)</option><option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74">New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
+                <option value="28.3838,36.5662" selected>Tabuk, Saudi Arabia (pilot)</option><option value="24.4709,39.6122">Madinah, Saudi Arabia</option><option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74">New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
               </select><button type="button" class="globe-heat-trigger" data-heat-target="region1">◉ SHOW HEATMAP · EARTH 01</button><p>Drag to rotate · Scroll to zoom</p>
             </div>
           </article>
@@ -383,7 +383,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             <div id="globe2" class="globe"></div><div id="heat-card-2" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 02</strong><span class="heat-card-range">NASA POWER</span></div><div id="globe-inspect-2" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region2" aria-label="Region 02">
-                <option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74" selected>New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
+                <option value="24.4709,39.6122">Madinah, Saudi Arabia</option><option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74" selected>New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
               </select><button type="button" class="globe-heat-trigger" data-heat-target="region2">◉ SHOW HEATMAP · EARTH 02</button><p>Drag to rotate · Scroll to zoom</p>
             </div>
           </article>
@@ -576,7 +576,7 @@ for (const id of ["globe1", "globe2"]) {
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="nasa-power.js?v=606a6a1"></script>
+<script src="nasa-power.js?v=4c40677d"></script>
 <script src="data-assistant.js?v=cfd27b72"></script>
 <script src="timeline.js?v=046f794e"></script>
 <script src="heatmap.js?v=spatial-patches-2"></script>
