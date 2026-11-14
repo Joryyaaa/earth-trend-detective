@@ -11,12 +11,26 @@
     wind:{code:"WS2M",name:"2 m wind speed",unit:"m/s"}
   };
   const names={
-    "28.3838,36.5662":"Tabuk (point)",
-    "24.7,46.7":"Riyadh (point)",
-    "40.7,-74":"New York (point)",
-    "35.7,139.7":"Tokyo (point)",
-    "51.5,-0.1":"London (point)",
-    "-33.9,151.2":"Sydney (point)"
+    "28.3838,36.5662":"Tabuk, Saudi Arabia (NASA POWER point)",
+    "24.47,39.61":"Madinah, Saudi Arabia (NASA POWER point)",
+    "24.7,46.7":"Riyadh, Saudi Arabia (NASA POWER point)",
+    "21.49,39.19":"Jeddah, Saudi Arabia (NASA POWER point)",
+    "30.04,31.24":"Cairo, Egypt (NASA POWER point)",
+    "-1.29,36.82":"Nairobi, Kenya (NASA POWER point)",
+    "-33.92,18.42":"Cape Town, South Africa (NASA POWER point)",
+    "6.52,3.38":"Lagos, Nigeria (NASA POWER point)",
+    "51.5,-0.1":"London, UK (NASA POWER point)",
+    "48.86,2.35":"Paris, France (NASA POWER point)",
+    "59.91,10.75":"Oslo, Norway (NASA POWER point)",
+    "41.01,28.98":"Istanbul, Türkiye (NASA POWER point)",
+    "40.7,-74":"New York, USA (NASA POWER point)",
+    "34.05,-118.24":"Los Angeles, USA (NASA POWER point)",
+    "19.43,-99.13":"Mexico City, Mexico (NASA POWER point)",
+    "-23.55,-46.63":"São Paulo, Brazil (NASA POWER point)",
+    "35.7,139.7":"Tokyo, Japan (NASA POWER point)",
+    "28.61,77.21":"New Delhi, India (NASA POWER point)",
+    "1.35,103.82":"Singapore (NASA POWER point)",
+    "-33.9,151.2":"Sydney, Australia (NASA POWER point)"
   };
   const $=id=>document.getElementById(id);
   const cache=new Map();

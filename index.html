@@ -349,7 +349,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
       <label><span class="side-label">End Year</span><select id="end-year" disabled><option>Awaiting dataset</option></select></label>
     </div>
     <button id="load-nasa-data" type="button" class="load-nasa-button">↻ Refresh NASA observations</button>
-    <div id="nasa-data-status" class="nasa-status" role="status">NASA data not loaded yet.</div>
+    <div id="nasa-data-status" class="nasa-status" role="status">Choose two cities and refresh NASA observations. Live NASA POWER data; no fabricated values.</div>
     <div class="heatmap-controls">
       <div class="label">◉ SPATIAL HEAT LAYER</div>
       <label class="side-label" for="heat-region">Globe to color</label>
@@ -374,7 +374,26 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             <div id="globe1" class="globe"></div><div id="heat-card-1" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 01</strong><span class="heat-card-range">NASA POWER</span></div><div id="globe-inspect-1" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region1" aria-label="Region 01">
-                <option value="28.3838,36.5662" selected>Tabuk, Saudi Arabia (pilot)</option><option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74">New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
+                <option value="28.3838,36.5662" selected>Tabuk, Saudi Arabia</option>
+                <option value="24.47,39.61">Madinah, Saudi Arabia</option>
+                <option value="24.7,46.7">Riyadh, Saudi Arabia</option>
+                <option value="21.49,39.19">Jeddah, Saudi Arabia</option>
+                <option value="30.04,31.24">Cairo, Egypt</option>
+                <option value="-1.29,36.82">Nairobi, Kenya</option>
+                <option value="-33.92,18.42">Cape Town, South Africa</option>
+                <option value="6.52,3.38">Lagos, Nigeria</option>
+                <option value="51.5,-0.1">London, UK</option>
+                <option value="48.86,2.35">Paris, France</option>
+                <option value="59.91,10.75">Oslo, Norway</option>
+                <option value="41.01,28.98">Istanbul, Türkiye</option>
+                <option value="40.7,-74">New York, USA</option>
+                <option value="34.05,-118.24">Los Angeles, USA</option>
+                <option value="19.43,-99.13">Mexico City, Mexico</option>
+                <option value="-23.55,-46.63">São Paulo, Brazil</option>
+                <option value="35.7,139.7">Tokyo, Japan</option>
+                <option value="28.61,77.21">New Delhi, India</option>
+                <option value="1.35,103.82">Singapore</option>
+                <option value="-33.9,151.2">Sydney, Australia</option>
               </select><button type="button" class="globe-heat-trigger" data-heat-target="region1">◉ SHOW HEATMAP · EARTH 01</button><p>Drag to rotate · Scroll to zoom</p>
             </div>
           </article>
@@ -383,7 +402,26 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             <div id="globe2" class="globe"></div><div id="heat-card-2" class="globe-heat-panel" hidden><strong class="heat-card-title">EARTH 02</strong><span class="heat-card-range">NASA POWER</span></div><div id="globe-inspect-2" class="globe-reading">Click the globe to inspect a NASA POWER point</div>
             <div class="globe-footer">
               <select id="region2" aria-label="Region 02">
-                <option value="24.7,46.7">Riyadh, Saudi Arabia</option><option value="40.7,-74" selected>New York, USA</option><option value="35.7,139.7">Tokyo, Japan</option><option value="51.5,-0.1">London, UK</option><option value="-33.9,151.2">Sydney, Australia</option>
+                <option value="28.3838,36.5662">Tabuk, Saudi Arabia</option>
+                <option value="24.47,39.61">Madinah, Saudi Arabia</option>
+                <option value="24.7,46.7">Riyadh, Saudi Arabia</option>
+                <option value="21.49,39.19">Jeddah, Saudi Arabia</option>
+                <option value="30.04,31.24">Cairo, Egypt</option>
+                <option value="-1.29,36.82">Nairobi, Kenya</option>
+                <option value="-33.92,18.42">Cape Town, South Africa</option>
+                <option value="6.52,3.38">Lagos, Nigeria</option>
+                <option value="51.5,-0.1">London, UK</option>
+                <option value="48.86,2.35">Paris, France</option>
+                <option value="59.91,10.75">Oslo, Norway</option>
+                <option value="41.01,28.98">Istanbul, Türkiye</option>
+                <option value="40.7,-74" selected>New York, USA</option>
+                <option value="34.05,-118.24">Los Angeles, USA</option>
+                <option value="19.43,-99.13">Mexico City, Mexico</option>
+                <option value="-23.55,-46.63">São Paulo, Brazil</option>
+                <option value="35.7,139.7">Tokyo, Japan</option>
+                <option value="28.61,77.21">New Delhi, India</option>
+                <option value="1.35,103.82">Singapore</option>
+                <option value="-33.9,151.2">Sydney, Australia</option>
               </select><button type="button" class="globe-heat-trigger" data-heat-target="region2">◉ SHOW HEATMAP · EARTH 02</button><p>Drag to rotate · Scroll to zoom</p>
             </div>
           </article>
@@ -576,7 +614,7 @@ for (const id of ["globe1", "globe2"]) {
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="nasa-power.js?v=3e7d1220"></script>
+<script src="nasa-power.js?v=20-global-cities-20261114"></script>
 <script src="data-assistant.js?v=cfd27b72"></script>
 <script src="timeline.js?v=046f794e"></script>
 <script src="heatmap.js?v=spatial-patches-2"></script>
