@@ -80,6 +80,12 @@ select:disabled{opacity:.55;cursor:not-allowed}
 #chart-empty{display:flex;align-items:center;justify-content:center;flex-direction:column}
 #nasa-trend-chart{height:100%!important;width:100%!important}
 .source-details{font-size:10px;color:#9daac3;line-height:1.55;margin:10px 0 0}
+
+.mode-control{display:block}
+.mode-description{color:#8e9db9;font-size:10px;line-height:1.45;margin:0}
+.forecast-output{padding:13px;border:1px solid #8273a44d;border-radius:11px;background:#17182c;color:#d9caff;font-size:12px;line-height:1.7;margin:12px 0}
+.forecast-caution{font-size:10px;color:#99a8c2;line-height:1.6}
+@media(min-width:761px){.sidebar{gap:12px;padding-top:15px}.sidebar .side-divider{margin:1px 0}}
 </style>
 </head>
 <body>
@@ -95,6 +101,15 @@ select:disabled{opacity:.55;cursor:not-allowed}
       <button type="button" class="navbutton" data-view="trends" aria-pressed="false"><span class="symbol">⌁</span> Trends</button>
       <button type="button" class="navbutton" data-view="insights" aria-pressed="false"><span class="symbol">✧</span> Insights</button>
     </div>
+    <div class="side-divider"></div>
+    <div class="label">COMPARISON MODE</div>
+    <label class="mode-control"><span class="side-label">What to compare?</span>
+      <select id="comparison-mode" aria-label="Comparison mode">
+        <option value="regions">Two locations · same years</option>
+        <option value="periods">Same location · two periods</option>
+      </select>
+    </label>
+    <p id="mode-description" class="mode-description">Compare two point locations over identical calendar years.</p>
     <div class="side-divider"></div>
     <div class="label">DATA EXPLORER</div>
     <div class="data-sidebar-controls">
@@ -115,7 +130,7 @@ select:disabled{opacity:.55;cursor:not-allowed}
       <div class="center-column">
         <section class="globe-grid" aria-label="Two interactive Earth globes">
           <article class="panel planet">
-            <div class="section-header"><strong>Region 01</strong><small>● INTERACTIVE EARTH</small></div>
+            <div class="section-header"><strong id="globe-title-1">Region 01</strong><small>● INTERACTIVE EARTH</small></div>
             <div id="globe1" class="globe"></div>
             <div class="globe-footer">
               <select id="region1" aria-label="Region 01">
@@ -124,7 +139,7 @@ select:disabled{opacity:.55;cursor:not-allowed}
             </div>
           </article>
           <article class="panel planet">
-            <div class="section-header"><strong>Region 02</strong><small>● INTERACTIVE EARTH</small></div>
+            <div class="section-header"><strong id="globe-title-2">Region 02</strong><small>● INTERACTIVE EARTH</small></div>
             <div id="globe2" class="globe"></div>
             <div class="globe-footer">
               <select id="region2" aria-label="Region 02">
@@ -153,14 +168,21 @@ select:disabled{opacity:.55;cursor:not-allowed}
           <div class="legend"><span><i class="dot"></i>Region 01</span><span><i class="dot cyan"></i>Region 02</span></div>
         </div>
         <div class="tab-body" id="panel-insights" hidden>
-          <div class="info-list"><strong>Scientific Insights</strong><p>Compare the two regions' historical change rates, significance, and potential drivers when datasets and analysis are ready.</p><strong>Interpretation</strong><p>No scientific conclusion is displayed before measurements are validated.</p></div>
+          <div class="info-list" id="insight-content"><strong>Scientific Insights</strong><p>Waiting for verified NASA POWER observations.</p></div>
         </div>
         <div class="tab-body" id="panel-forecast" hidden>
-          <div class="info-list"><strong>Future Projections</strong><p>Forecasts and uncertainty intervals will be shown only after a tested predictive model is connected.</p><strong>Model status</strong><p>Not trained yet.</p></div>
+          <div class="info-list">
+            <strong>AI-assisted Time-Series Forecast</strong>
+            <p>Experimental autoregressive machine-learning model trained on annual NASA POWER point data and evaluated on held-out years.</p>
+            <label class="side-label" for="forecast-horizon">Forecast horizon</label>
+            <select id="forecast-horizon"><option value="1">1 year</option><option value="3">3 years</option><option value="5">5 years</option></select>
+            <div id="forecast-output" class="forecast-output">Awaiting validated data.</div>
+            <p class="forecast-caution">Model estimates, not NASA predictions. Climate scenarios, extremes and external drivers are not represented.</p>
+          </div>
         </div>
       </section>
     </div>
-    <div class="dashboard-footer">EARTH TREND DETECTIVE · SOURCE DATA NOT CONNECTED</div>
+    <div class="dashboard-footer">NASA POWER POINT DATA · NOT REGIONAL AVERAGES · EXPLORATORY RESEARCH DASHBOARD</div>
   </main>
 </div>
 <script>
