@@ -93,6 +93,7 @@
      makeLine(pane,"Annual observations",String(group.length));
      makeLine(pane,"Mean",fmt(a.means[i])+" "+unit);
      makeLine(pane,"Linear slope",fmt(a.slopes[i],3)+" "+unit+"/year");
+     makeLine(pane,"Theil–Sen trend",a.senSlopes?.[i]!=null?fmt(a.senSlopes[i]*10,3)+" "+unit+"/decade":"Not available");
      const test=a.stats[i];
      makeLine(pane,"Mann–Kendall (exploratory)",test?.p!=null?(test.p<0.001?"p < 0.001":"p="+fmt(test.p,3))+" · "+test.label:"Not available");
      root.append(pane);
