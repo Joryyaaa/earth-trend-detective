@@ -105,7 +105,7 @@
    forecasts.forEach((item,i)=>{
      const f=item?.result;
      makeLine(root,item?.loc?.name||"Point "+(i+1),f?.ok?
-       f.prediction.year+": "+fmt(f.prediction.value)+" "+unit+" · "+(f.validated?"beats":"does not beat")+" naive holdout baseline":
+       f.prediction.year+": "+fmt(f.prediction.value)+" "+unit+" · "+(f.validated?"beats":"does not beat")+" naive "+(f.horizon||1)+"-year holdout baseline":
        "Unavailable ("+(f?.message||"not computed")+")");
    });
    root.append(dom("h3","report-heading","SOURCE & LIMITATIONS"));
