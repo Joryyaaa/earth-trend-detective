@@ -109,7 +109,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .panel{box-shadow:inset 0 1px #ffffff10,0 0 22px #130e36a8}
 .planet{background:radial-gradient(ellipse at 50% 50%,#24225455,transparent 72%),linear-gradient(140deg,#12142df7,#060c1b)}
 .planet .section-header small{color:#9fdaf5}
-.globe-reading{padding:6px 12px;min-height:29px;text-align:center;color:#b8c5f7;font-size:10px;line-height:1.4;background:#15152a9c;border-top:1px solid #9782fa22}
+.globe-reading{padding:6px 12px;min-height:29px;text-align:center;color:#b8c5f7;font-size:10px;line-height:1.4;background:#15152a9c;border-top:1px solid #9782fa22;backdrop-filter:blur(8px)
 .globe-footer{padding-top:7px}
 .assistant-intro{font-size:10px;letter-spacing:1.1px;color:#b4a7ed;margin-top:17px}
 .assistant-log{min-height:160px;flex:1;overflow:auto;display:flex;flex-direction:column;gap:9px;padding:14px 4px}
@@ -147,7 +147,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
         <option value="periods">Same location · two periods</option>
       </select>
     </label>
-    <p id="mode-description" class="mode-description">Compare two point locations over identical calendar years.</p>
+    <p id="mode-description" class="mode-description">Choose a point below each globe to compare locations over identical years.</p>
     <div class="side-divider"></div>
     <div class="label">DATA EXPLORER</div>
     <div class="data-sidebar-controls">
