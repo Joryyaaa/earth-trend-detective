@@ -31,3 +31,8 @@ Globe textures are visual basemaps, not maps of environmental change. Clicking o
 
 ## Reference challenge
 https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/
+
+## New interactive visualizations (November 2026)
+- Time Travel: a year slider, two historical sparklines, year markers, and comparative value bars sourced from complete annual NASA POWER point summaries. Its annual sampling is not a sequence of historical satellite photographs.
+- Sampled Spatial Heat Layer: clicking **Generate NASA Heatmap** requests a 3-by-3 neighborhood (up to nine NASA POWER point datasets) around either selected globe's current coordinate, using 0.5° latitude and 0.625° longitude steps for the chosen year and variable. The colored points are scaled only among the returned samples. This is a sparse local point-sample visualization, **not** a continuous interpolated grid, a true gridded remote-sensing heatmap, or an area-weighted regional average. NASA API requests may be slow or rate-limited. Use **Remove heat layer** to restore the original selected-point marker.
+- Future development: a true spatially complete heatmap should use a downloaded, documented gridded collection with source resolution, metadata, quality screening, and spatially valid rendering.
