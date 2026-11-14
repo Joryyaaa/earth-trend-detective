@@ -361,7 +361,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
     </div>
 
     <div class="side-divider"></div>
-    <div class="spacer"></div>
+    <div class="side-divider"></div><div class="label">◈ EARTH CHANGE VISUALIZER</div><div class="earth-layer-controls" style="display:grid;gap:8px;padding:6px 0 12px"><label class="side-label" for="earth-layer-mode">Visualization on both Earths</label><select id="earth-layer-mode" aria-label="Earth visualization mode"><option value="normal">Original Earth</option><option value="thermal">Thermal · NASA air temperature</option><option value="geology">Geology · USGS earthquakes</option><option value="plates">Tectonics · published plate boundaries</option></select><label class="side-label" for="geology-days">Earthquake observation window</label><select id="geology-days"><option value="30">Last 30 days</option><option value="365" selected>Last 365 days</option></select><button type="button" id="earth-layer-apply" class="heat-run">◉ APPLY TO BOTH EARTHS</button><button type="button" id="earth-layer-reset" class="heat-clear">Reset visualizer</button><p id="earth-layer-status" class="heat-status" role="status">Select a layer. Thermal is NASA POWER air temperature; seismic events are USGS; plate boundaries are static Bird PB2002 geometry.</p></div><div class="spacer"></div>
     <div class="sidebar-note"><span style="color:#c5b7ff">◉ NASA POWER · POINT DATA</span><br>Click a globe to inspect a point. Markers indicate locations, not historic satellite imagery.</div>
   </aside>
   <main class="workspace">
@@ -581,5 +581,6 @@ for (const id of ["globe1", "globe2"]) {
 <script src="timeline.js?v=046f794e"></script>
 <script src="heatmap.js?v=spatial-patches-2"></script>
 <script src="science-studio.js?v=017643d1"></script>
+<script src="earth-layers.js?v=preview-1"></script>
 </body>
 </html>
