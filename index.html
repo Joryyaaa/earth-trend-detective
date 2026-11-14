@@ -136,6 +136,23 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .ask-ai-workspace .assistant-form input{font-size:14px}
 .ask-ai-workspace .assistant-suggestions button{font-size:12px}
 @media(max-width:760px){.ask-ai-workspace{min-height:540px;padding:17px}.ask-ai-workspace .assistant-bubble{max-width:95%}}
+
+.timeline-panel{padding:12px 15px;flex-shrink:0;background:linear-gradient(110deg,#17152e,#0c1428);border-color:#8f77c366}
+.timeline-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.timeline-heading strong{display:block;margin-top:5px;font-size:12px}
+.timeline-head-actions{display:flex;align-items:center;gap:10px}
+.timeline-current{font-size:22px;font-weight:800;color:#c2aaff;font-variant-numeric:tabular-nums}
+#timeline-play{padding:7px 10px;border:1px solid #9b86d0;background:#352454;color:#efe5ff;border-radius:9px;font-size:11px;white-space:nowrap}
+#timeline-play:disabled{opacity:.5;cursor:not-allowed}
+#timeline-year{width:100%;accent-color:#ae95ff;margin:11px 0 0;cursor:pointer}
+#timeline-year:disabled{opacity:.35;cursor:not-allowed}
+.timeline-boundaries{display:flex;justify-content:space-between;color:#8193b4;font-size:9px}
+.timeline-readings{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.timeline-readings>div{background:#101a30a8;border-radius:8px;border:1px solid #ffffff12;padding:7px 9px;min-width:0}
+.timeline-readings span{display:block;color:#9bafce;font-size:9px;margin-bottom:4px}
+.timeline-readings strong{font-size:11px;color:#e4d6ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.timeline-context{font-size:9px;line-height:1.4;color:#8497b6;margin:9px 0 0}
+@media(max-width:760px){.timeline-readings{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -199,6 +216,19 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
               </select><p>Drag to rotate · Scroll to zoom</p>
             </div>
           </article>
+        </section>
+        <section class="timeline-panel panel" aria-label="Historical Time Travel">
+          <div class="timeline-heading">
+            <div><div class="label">TIME TRAVEL · VERIFIED YEARLY POINT DATA</div><strong>Explore environmental history</strong></div>
+            <div class="timeline-head-actions"><span id="timeline-current-year" class="timeline-current">—</span><button type="button" id="timeline-play" disabled aria-label="Play timeline">▶ Play</button></div>
+          </div>
+          <input type="range" id="timeline-year" min="1981" max="2025" value="2025" disabled aria-label="Selected historical year">
+          <div class="timeline-boundaries"><span id="timeline-first-year">Start year</span><span id="timeline-last-year">End year</span></div>
+          <div class="timeline-readings">
+            <div><span id="timeline-reading-1-label">Region 01</span><strong id="timeline-reading-1">Waiting for NASA data</strong></div>
+            <div><span id="timeline-reading-2-label">Region 02</span><strong id="timeline-reading-2">Waiting for NASA data</strong></div>
+          </div>
+          <p id="timeline-context" class="timeline-context">Timeline uses selected NASA POWER point observations. Earth textures are not historical satellite imagery.</p>
         </section>
         <section class="lower-strip" aria-label="Summary metrics">
           <article class="panel metric" id="rate-metric"><div class="metric-label">RATE OF CHANGE</div><div class="metric-value">Awaiting data</div></article>
@@ -359,5 +389,6 @@ document.querySelectorAll("[data-view], [data-tab]").forEach(button => {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="nasa-power.js?v=62e7ff01"></script>
 <script src="data-assistant.js?v=cfd27b72"></script>
+<script src="timeline.js?v=7f46ae5d"></script>
 </body>
 </html>
