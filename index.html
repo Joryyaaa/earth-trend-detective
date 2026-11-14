@@ -153,6 +153,39 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .timeline-readings strong{font-size:11px;color:#e4d6ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .timeline-context{font-size:9px;line-height:1.4;color:#8497b6;margin:9px 0 0}
 @media(max-width:760px){.timeline-readings{grid-template-columns:1fr 1fr}}
+
+/* Visual first time-travel, visible even on wide dashboard screens */
+#time-travel-card{padding:12px 16px!important;border:1px solid #b18cf077!important;border-radius:16px!important;background:linear-gradient(110deg,#181438,#0b1a31)!important;flex-shrink:0;box-shadow:inset 0 0 25px #8e72ff12,0 0 30px #6d43b820!important}
+#time-travel-card .timeline-heading{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}
+#time-travel-card .timeline-heading .label{font-size:10px!important;letter-spacing:1.5px!important}
+#time-travel-card .timeline-heading strong{display:block!important;color:#faf4ff!important;font-size:15px!important;margin-top:4px!important}
+#time-travel-card .timeline-current{font-size:32px!important;color:#ceb9ff!important;line-height:1!important}
+#time-travel-card #timeline-play{background:#8a60d2!important;color:#fff!important;border:1px solid #b498f1!important;border-radius:10px!important;font-size:12px!important;padding:9px 16px!important}
+#time-travel-card .timeline-visual{position:relative;margin-top:6px!important}
+#timeline-sparkline{display:block!important;width:100%!important;height:78px!important;background:linear-gradient(0deg,#191c3940,transparent);border-radius:8px}
+#time-travel-card .timeline-ruler{display:flex!important;justify-content:space-between!important;color:#96a1cf!important;font-size:11px!important}
+#time-travel-card #timeline-year{display:block!important;width:100%!important;margin:4px 0 8px!important;appearance:none!important;-webkit-appearance:none!important;height:7px!important;border-radius:99px!important;background:linear-gradient(90deg,#ac7aff,#58cce9)!important;accent-color:#c3a4ff!important;cursor:pointer!important}
+#time-travel-card #timeline-year::-webkit-slider-thumb{-webkit-appearance:none!important;width:22px!important;height:22px!important;border:4px solid #f8f1ff!important;border-radius:50%!important;background:#8d5df0!important;box-shadow:0 0 15px #b18bff}
+#time-travel-card .timeline-readings{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;margin:0!important}
+#time-travel-card .timeline-readings .timeline-row{display:flex!important;flex-direction:column!important;gap:5px!important;padding:8px 10px!important;border-radius:10px!important;background:#0d1429c9!important;border:1px solid #ffffff15!important;min-width:0}
+#time-travel-card .timeline-data{display:flex!important;gap:10px!important;justify-content:space-between!important;align-items:center!important}
+#time-travel-card .timeline-data span{font-size:11px!important;color:#b4b9d4!important;margin:0!important;display:block!important}
+#time-travel-card .timeline-data strong{font-size:15px!important;color:#eee5ff!important;display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#time-travel-card .timeline-track{width:100%;height:7px;border-radius:8px;background:#ffffff12;overflow:hidden}
+#time-travel-card .timeline-fill{height:100%;width:0%;border-radius:8px;transition:width .25s ease}
+#time-travel-card .timeline-fill.first{background:linear-gradient(90deg,#7b65d7,#c8a1ff)}
+#time-travel-card .timeline-fill.second{background:linear-gradient(90deg,#307bb2,#67e4f4)}
+#time-travel-card .timeline-context{font-size:10px!important;line-height:1.35!important;color:#94a6c5!important;margin:7px 0 0!important;white-space:normal!important}
+.heatmap-controls{display:flex;flex-direction:column;gap:7px;padding:11px;border:1px solid #8e77c455;border-radius:12px;background:#17152baa}
+.heatmap-controls select{padding:9px}
+.heat-run{background:#6f48ad;color:#fff;border:1px solid #b094eb;border-radius:9px;padding:10px 7px;font-size:12px}
+.heat-clear{background:#13172b;color:#c8b7df;border:1px solid #746299;border-radius:9px;padding:8px;font-size:11px}
+.heat-clear:disabled,.heat-run:disabled{opacity:.4;cursor:not-allowed}
+.heat-status{font-size:10px;line-height:1.45;color:#a9b7d0;margin:2px 0 0}
+.heat-color-gradient{height:10px;border-radius:8px;background:linear-gradient(90deg,#38cfee,#7389ff,#d46cef,#ff9c60)}
+.heat-limits{display:flex;justify-content:space-between;margin-top:5px;color:#bbc6db;font-size:10px}
+@media(min-width:761px){.dashboard{min-height:800px}.sidebar{gap:9px;padding-top:12px}.timeline-panel{max-height:270px}}
+@media(max-width:760px){#time-travel-card .timeline-readings{grid-template-columns:1fr!important}.heatmap-controls{max-width:100%}}
 </style>
 </head>
 <body>
@@ -190,6 +223,15 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
     </div>
     <button id="load-nasa-data" type="button" class="load-nasa-button">↻ Refresh NASA observations</button>
     <div id="nasa-data-status" class="nasa-status" role="status">NASA data not loaded yet.</div>
+    <div class="heatmap-controls">
+      <div class="label">◉ SPATIAL HEAT LAYER</div>
+      <label class="side-label" for="heat-region">Globe to color</label>
+      <select id="heat-region" aria-label="Choose globe for heatmap"><option value="region1">Earth 01</option><option value="region2">Earth 02</option></select>
+      <button type="button" id="heat-run" class="heat-run">✦ Generate NASA Heatmap</button>
+      <button type="button" id="heat-clear" class="heat-clear" disabled>Remove heat layer</button>
+      <div class="heat-legend" id="heat-legend" hidden><div class="heat-color-gradient"></div><div class="heat-limits"><span id="heat-min">Low</span><span id="heat-max">High</span></div></div>
+      <p id="heat-status" class="heat-status" role="status">9 real NASA POWER grid-point samples · not a continuous satellite image</p>
+    </div>
     <div class="spacer"></div>
     <div class="sidebar-note"><span style="color:#c5b7ff">◉ NASA POWER · POINT DATA</span><br>Click a globe to inspect a point. Markers indicate locations, not historic satellite imagery.</div>
   </aside>
@@ -217,18 +259,21 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
             </div>
           </article>
         </section>
-        <section class="timeline-panel panel" aria-label="Historical Time Travel">
+        <section class="timeline-panel panel" id="time-travel-card" aria-label="Interactive Time Travel">
           <div class="timeline-heading">
-            <div><div class="label">TIME TRAVEL · VERIFIED YEARLY POINT DATA</div><strong>Explore environmental history</strong></div>
+            <div><div class="label">◉ TIME TRAVEL · NASA HISTORICAL DATA</div><strong>Watch the environment change</strong></div>
             <div class="timeline-head-actions"><span id="timeline-current-year" class="timeline-current">—</span><button type="button" id="timeline-play" disabled aria-label="Play timeline">▶ Play</button></div>
           </div>
-          <input type="range" id="timeline-year" min="1981" max="2025" value="2025" disabled aria-label="Selected historical year">
-          <div class="timeline-boundaries"><span id="timeline-first-year">Start year</span><span id="timeline-last-year">End year</span></div>
-          <div class="timeline-readings">
-            <div><span id="timeline-reading-1-label">Region 01</span><strong id="timeline-reading-1">Waiting for NASA data</strong></div>
-            <div><span id="timeline-reading-2-label">Region 02</span><strong id="timeline-reading-2">Waiting for NASA data</strong></div>
+          <div class="timeline-visual">
+            <canvas id="timeline-sparkline" aria-label="Historical time series for both selected locations"></canvas>
+            <div class="timeline-ruler"><span id="timeline-first-year">Start</span><span id="timeline-last-year">End</span></div>
+            <input type="range" id="timeline-year" min="1981" max="2025" value="2025" disabled aria-label="Selected historical year">
           </div>
-          <p id="timeline-context" class="timeline-context">Timeline uses selected NASA POWER point observations. Earth textures are not historical satellite imagery.</p>
+          <div class="timeline-readings">
+            <div class="timeline-row first"><div class="timeline-data"><span id="timeline-reading-1-label">Region 01</span><strong id="timeline-reading-1">Waiting for NASA data</strong></div><div class="timeline-track"><div id="timeline-fill-1" class="timeline-fill first"></div></div></div>
+            <div class="timeline-row second"><div class="timeline-data"><span id="timeline-reading-2-label">Region 02</span><strong id="timeline-reading-2">Waiting for NASA data</strong></div><div class="timeline-track"><div id="timeline-fill-2" class="timeline-fill second"></div></div></div>
+          </div>
+          <p id="timeline-context" class="timeline-context">Yearly observed/model-derived NASA POWER point values. Earth textures are not historical satellite snapshots.</p>
         </section>
         <section class="lower-strip" aria-label="Summary metrics">
           <article class="panel metric" id="rate-metric"><div class="metric-label">RATE OF CHANGE</div><div class="metric-value">Awaiting data</div></article>
@@ -389,6 +434,7 @@ document.querySelectorAll("[data-view], [data-tab]").forEach(button => {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="nasa-power.js?v=62e7ff01"></script>
 <script src="data-assistant.js?v=cfd27b72"></script>
-<script src="timeline.js?v=7f46ae5d"></script>
+<script src="timeline.js?v=f8c818ba"></script>
+<script src="heatmap.js?v=b47c9123"></script>
 </body>
 </html>
