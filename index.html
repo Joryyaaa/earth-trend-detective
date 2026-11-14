@@ -262,6 +262,43 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 }
 @media(min-width:761px) and (max-height:800px){.globe-grid{height:520px}}
 @media(max-width:760px){.sidebar-nav{flex-wrap:wrap}.content-grid{display:flex;flex-direction:column}.globe-grid{min-height:450px}.globe{min-height:270px}}
+
+/* Separate realistic science panels: blue-black/violet mission-control theme */
+.studio-page{display:flex;flex-direction:column;min-height:0;gap:15px;flex:1;padding:23px 27px;background:linear-gradient(135deg,#111732,#080f22);border-color:#7d6daa66;overflow-y:auto}
+.studio-page[hidden]{display:none!important}
+.studio-topline{display:flex;justify-content:space-between;gap:12px;letter-spacing:2px;color:#aca0de;font-size:10px}
+.studio-topline strong{color:#7ed6ee;font-size:10px}
+.studio-heading h2{font-size:clamp(24px,3vw,38px);margin:4px 0;color:#eee7ff;letter-spacing:.5px}
+.studio-heading p{margin:0;color:#a8b9d7;font-size:13px}
+.lab-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.lab-region-card{background:linear-gradient(140deg,#252044,#101e36);border:1px solid #9981db75;border-radius:17px;padding:22px;box-shadow:0 0 28px #8665c322}
+.lab-region-card:nth-child(2){border-color:#61cadf77}
+.lab-location{font-size:13px;color:#ddd4fb;letter-spacing:1px}
+.lab-year{font-size:11px;color:#87b8d7;letter-spacing:1px;margin-top:22px}
+.lab-future-value{font-weight:750;font-size:clamp(21px,3vw,39px);margin:5px 0;color:#fff}
+.lab-flag{font-size:12px;color:#c5e6ff;margin-bottom:13px}
+.lab-flag[data-quality=caution]{color:#f0bbac}
+.lab-scores{display:flex;justify-content:space-between;gap:8px;padding-top:12px;border-top:1px solid #ffffff1b;font-size:11px;color:#aebddd}
+.lab-chart-frame{height:clamp(270px,39vh,470px);min-height:260px;background:linear-gradient(#14152caa,#0c1629);border:1px solid #6472a345;border-radius:16px;padding:18px;position:relative}
+.lab-chart-frame canvas{width:100%!important;height:100%!important}
+.studio-note{font-size:13px;color:#d4c7fa}
+.studio-science-warning{font-size:11px;color:#96a5c8;line-height:1.7;margin:0}
+.studio-actions{display:flex;gap:10px;flex-wrap:wrap}
+.studio-actions button{border:1px solid #9483da;background:#513c86;color:#fff;padding:11px 18px;border-radius:10px;font-size:12px}
+.studio-actions button:hover{background:#6d54af}
+.report-paper{background:#eaf0fb;color:#182849;border-radius:14px;padding:clamp(20px,3vw,40px);max-width:950px;width:100%;align-self:center;font-family:Arial,sans-serif;line-height:1.6}
+.report-paper h2{margin:7px 0;font-size:25px;letter-spacing:.6px;color:#1c2952}
+.report-paper h3{font-size:15px;margin:0 0 10px;color:#33416a}
+.report-kicker{font-size:11px;letter-spacing:1.7px;color:#735baa}
+.report-subtitle{font-size:13px;color:#4f6180}
+.report-location{border-top:1px solid #bcc9dd;margin-top:20px;padding-top:15px}
+.report-row{display:flex;justify-content:space-between;gap:25px;padding:7px 0;border-bottom:1px solid #ccd5e6;font-size:13px}
+.report-row span{color:#4d607d}
+.report-row strong{text-align:right}
+.report-heading{margin-top:28px!important}
+.report-small{font-size:12px;color:#53627d;line-height:1.7}
+@media(max-width:830px){.lab-results{grid-template-columns:1fr}.studio-page{padding:18px}}
+@media print{body *{visibility:hidden!important}#report-preview,#report-preview *{visibility:visible!important}#report-preview{position:absolute;left:0;top:0;max-width:none;width:100%;border:0;box-shadow:none;background:#fff!important;color:#111!important}}
 </style>
 </head>
 <body>
@@ -306,6 +343,8 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
       <button type="button" class="navbutton" data-view="trends" aria-pressed="false"><span class="symbol">⌁</span> Trends</button>
       <button type="button" class="navbutton" data-view="insights" aria-pressed="false"><span class="symbol">✧</span> Insights</button>
       <button type="button" class="navbutton" data-view="forecast" aria-pressed="false"><span class="symbol">✦</span> AI Forecast</button>
+      <button type="button" class="navbutton" data-view="prediction-lab" aria-pressed="false"><span class="symbol">◷</span> Prediction Lab</button>
+      <button type="button" class="navbutton" data-view="reports" aria-pressed="false"><span class="symbol">▤</span> Report Studio</button>
       <button type="button" class="navbutton" data-view="assistant" aria-pressed="false"><span class="symbol">◉</span> Ask AI</button>
     </div>
 
@@ -410,6 +449,20 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
           </form>
           <p class="assistant-disclosure">Guided answers computed from NASA POWER data. This is not a general-purpose AI chat service. Clearing chat does not delete NASA data.</p>
 </section>
+    <section class="studio-page panel" id="prediction-lab-page" hidden aria-label="AI Prediction Lab">
+      <div class="studio-topline"><span>◉ PREDICTIVE INTELLIGENCE / SCIENCE LAB</span><strong>MODEL EVALUATION</strong></div>
+      <div class="studio-heading"><h2>AI Prediction Lab</h2><p>NASA POWER observed history vs experimentally modelled future · purple / cyan comparison</p></div>
+      <div class="lab-results" id="lab-results"></div>
+      <div class="lab-chart-frame"><canvas id="lab-chart"></canvas></div>
+      <div class="studio-note" id="lab-message">Waiting for NASA observations.</div>
+      <p class="studio-science-warning">The model is autoregressive ridge regression. Holdout RMSE describes one-year-ahead evaluation, not calibrated prediction uncertainty. Future values are estimates and are not NASA forecasts.</p>
+    </section>
+    <section class="studio-page panel" id="report-studio-page" hidden aria-label="Environmental report studio">
+      <div class="studio-topline"><span>◉ EARTH OBSERVATION / RESULTS EXPORT</span><strong>RESEARCH OUTPUT</strong></div>
+      <div class="studio-heading"><h2>Environmental Report Studio</h2><p>Generate evidence-linked summaries of the selected locations, years, statistics and forecasts</p></div>
+      <div class="studio-actions"><button type="button" id="report-generate">↻ Generate Report</button><button type="button" id="report-print">▤ Print / Save PDF</button><button type="button" id="report-export">↓ Export HTML</button></div>
+      <div id="report-preview" class="report-paper">Select locations to generate a scientific comparison report.</div>
+    </section>
     <div class="dashboard-footer">NASA POWER POINT DATA · NOT REGIONAL AVERAGES · EXPLORATORY RESEARCH DASHBOARD</div>
   </main>
 </div>
@@ -476,8 +529,10 @@ window.addEventListener("resize", () => {
 
 function switchPanel(tab) {
   const active = tab === "overview" ? "trends" : tab;
-  document.querySelector(".content-grid").hidden = tab === "assistant";
   document.getElementById("ask-ai-workspace").hidden = tab !== "assistant";
+  document.getElementById("prediction-lab-page").hidden = tab !== "prediction-lab";
+  document.getElementById("report-studio-page").hidden = tab !== "reports";
+  document.querySelector(".content-grid").hidden = ["assistant","prediction-lab","reports"].includes(tab);
   const dashboard = document.querySelector(".dashboard");
   dashboard.dataset.activeView = tab;
   document.querySelectorAll("[data-tab]").forEach(b => {
@@ -517,9 +572,10 @@ document.querySelectorAll("[data-view], [data-tab]").forEach(button => {
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="nasa-power.js?v=62e7ff01"></script>
+<script src="nasa-power.js?v=3e7d1220"></script>
 <script src="data-assistant.js?v=cfd27b72"></script>
 <script src="timeline.js?v=046f794e"></script>
-<script src="heatmap.js?v=80f7eb85"></script>
+<script src="heatmap.js?v=0d44582d"></script>
+<script src="science-studio.js?v=017643d1"></script>
 </body>
 </html>
