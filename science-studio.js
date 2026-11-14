@@ -4,8 +4,8 @@
 (() => {
  "use strict";
  const $=id=>document.getElementById(id);
- const units={temperature:"°C",precipitation:"mm/year",humidity:"%",wind:"m/s"};
- const names={temperature:"Near-surface temperature",precipitation:"Corrected precipitation",humidity:"Relative humidity",wind:"Wind speed"};
+ const units={temperature:"°C",precipitation:"mm/year",humidity:"%",wind:"m/s",maximumTemperature:"°C",minimumTemperature:"°C",solarIrradiance:"MJ/m²/day"};
+ const names={temperature:"Near-surface temperature",precipitation:"Corrected precipitation",humidity:"Relative humidity",wind:"Wind speed",maximumTemperature:"Maximum air temperature",minimumTemperature:"Minimum air temperature",solarIrradiance:"Surface solar irradiance"};
  const fmt=(n,d=2)=>Number.isFinite(n)?Number(n).toFixed(d):"Not available";
  let predictionChart=null;
  function context(){
