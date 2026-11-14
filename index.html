@@ -238,6 +238,30 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .heat-sample-tile{height:28px;display:flex;align-items:center;justify-content:center;border:1px solid #ffffff65;border-radius:5px;color:#080c1b;box-shadow:inset 0 1px 3px #ffffff50;font-size:10px;font-weight:800;text-shadow:0 1px #ffffff55}
 @media(min-width:1500px){.globe-heat-panel .heat-sample-grid{max-width:410px}.heat-sample-tile{height:34px}}
 .globe-heat-trigger{display:block;width:100%;margin-top:7px;padding:8px 11px;background:linear-gradient(95deg,#3b295e,#153854);color:#f2eaff;border:1px solid #9676dc;border-radius:9px;font-size:10px;font-weight:750;letter-spacing:1.1px;box-shadow:0 0 15px #7357e72a}.globe-heat-trigger:hover{border-color:#cfbcff;background:#60458e}
+
+/* Primary mission cockpit: Earth 01 and 02 dominate the FIRST viewport */
+@media(min-width:761px){
+.dashboard{grid-template-columns:255px minmax(0,1fr);height:100vh;min-height:720px}
+.sidebar{gap:11px;padding:14px 13px;overflow-y:auto}
+.sidebar-nav{display:flex;flex-direction:column;gap:3px}
+.sidebar .navbutton{padding:10px 12px}
+.workspace{overflow-y:auto;overflow-x:hidden;padding:14px 18px}
+.content-grid{display:flex;flex-direction:column;gap:13px;flex:initial;min-height:0}
+.center-column{flex:initial;min-height:0;gap:12px}
+.globe-grid{min-height:510px;height:clamp(510px,65vh,740px);flex:none;gap:14px}
+.planet{min-height:0;position:relative}
+.globe{min-height:330px;flex:1}
+.planet .section-header{padding:16px 18px 0}
+.globe-footer{padding:10px 16px 16px;flex:none}
+.globe-footer select{padding:12px}
+.globe-reading{font-size:11px}
+.insights{min-height:400px;max-height:none;flex:initial}
+.dashboard[data-active-view="trends"] .center-column,.dashboard[data-active-view="insights"] .center-column,.dashboard[data-active-view="forecast"] .center-column{display:none}
+.dashboard[data-active-view="trends"] .content-grid,.dashboard[data-active-view="insights"] .content-grid,.dashboard[data-active-view="forecast"] .content-grid{display:block}
+.dashboard[data-active-view="overview"] .insights{min-height:380px}
+}
+@media(min-width:761px) and (max-height:800px){.globe-grid{height:520px}}
+@media(max-width:760px){.sidebar-nav{flex-wrap:wrap}.content-grid{display:flex;flex-direction:column}.globe-grid{min-height:450px}.globe{min-height:270px}}
 </style>
 </head>
 <body>
@@ -247,14 +271,6 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
     <div class="topmeta"><span>EARTH INTELLIGENCE PLATFORM</span><b>NASA SPACE APPS 2026</b></div>
   </header>
   <aside class="sidebar" aria-label="Dashboard navigation">
-    <div class="label">MISSION CONTROL</div>
-    <div class="sidebar-nav">
-      <button type="button" class="navbutton active" data-view="overview" aria-pressed="true"><span class="symbol">◈</span> Overview</button>
-      <button type="button" class="navbutton" data-view="trends" aria-pressed="false"><span class="symbol">⌁</span> Trends</button>
-      <button type="button" class="navbutton" data-view="insights" aria-pressed="false"><span class="symbol">✧</span> Insights</button>
-      <button type="button" class="navbutton" data-view="forecast" aria-pressed="false"><span class="symbol">✦</span> AI Forecast</button>
-      <button type="button" class="navbutton" data-view="assistant" aria-pressed="false"><span class="symbol">◉</span> Ask AI</button>
-    </div>
     <div class="side-divider"></div>
     <div class="label">COMPARISON MODE</div>
     <label class="mode-control"><span class="side-label">What to compare?</span>
@@ -284,6 +300,16 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
       <div class="heat-legend" id="heat-legend" hidden><div class="heat-color-gradient"></div><div class="heat-limits"><span id="heat-min">Low</span><span id="heat-max">High</span></div></div>
       <p id="heat-status" class="heat-status" role="status">9 point samples around each selected site · one shared comparison scale</p>
     </div>
+    <div class="label">MISSION NAVIGATION</div>
+    <div class="sidebar-nav">
+      <button type="button" class="navbutton active" data-view="overview" aria-pressed="true"><span class="symbol">◈</span> Overview</button>
+      <button type="button" class="navbutton" data-view="trends" aria-pressed="false"><span class="symbol">⌁</span> Trends</button>
+      <button type="button" class="navbutton" data-view="insights" aria-pressed="false"><span class="symbol">✧</span> Insights</button>
+      <button type="button" class="navbutton" data-view="forecast" aria-pressed="false"><span class="symbol">✦</span> AI Forecast</button>
+      <button type="button" class="navbutton" data-view="assistant" aria-pressed="false"><span class="symbol">◉</span> Ask AI</button>
+    </div>
+
+    <div class="side-divider"></div>
     <div class="spacer"></div>
     <div class="sidebar-note"><span style="color:#c5b7ff">◉ NASA POWER · POINT DATA</span><br>Click a globe to inspect a point. Markers indicate locations, not historic satellite imagery.</div>
   </aside>
