@@ -1,5 +1,7 @@
 # Data coverage and scientific status
 
+> Historical upstream notes below. This local review now uses daily UTC observations and horizon-matched validation. See [PROVENANCE.md](PROVENANCE.md) for the current implementation, aggregation, snapshots and limitations.
+
 ## Data actually connected to the website
 The website requests NASA POWER monthly **point** data through:
 https://power.larc.nasa.gov/docs/services/api/temporal/monthly/

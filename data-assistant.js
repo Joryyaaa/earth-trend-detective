@@ -5,12 +5,7 @@
   "use strict";
   const $ = id => document.getElementById(id);
   let inspectTarget = "region1";
-  const variables = {
-    temperature: {label:"near-surface air temperature",unit:"°C"},
-    precipitation:{label:"annual precipitation",unit:"mm/year"},
-    humidity:{label:"relative humidity",unit:"%"},
-    wind:{label:"wind speed",unit:"m/s"}
-  };
+  const variables=Object.fromEntries(Object.entries(window.EarthDataCore.variables).map(([key,v])=>[key,{label:v.name,unit:v.unit}]));
   const regionName = n => n?.loc?.name || "selected point";
   const fmt = (x,p=2) => Number.isFinite(x)?x.toFixed(p):"not available";
   const years = (v,a,b) => Array.from({length:Math.max(0,b-a+1)},(_,i)=>a+i)
@@ -40,13 +35,13 @@
     const label2=mode==="periods"?"later period ("+(mid+1)+"–"+b+")":regionName(d2);
     const slope1=trend(r1),slope2=trend(r2);
     if(/source|nasa|data|quality|where|موثوق|مصدر|البيانات/.test(q)) {
-      return "Source: NASA POWER monthly point API, summarized to complete annual values. This is modeled/reanalysis-informed meteorological point data, not an administrative regional average. Exact dataset, version, grid resolution and error need verification before publication. The globe image is a static visual background, not a historical satellite layer.";
+      return "Source: NASA POWER daily UTC point API, summarized to complete annual values. This is modeled/reanalysis-informed meteorological point data, not an administrative regional average. Exact dataset, version, grid resolution and error need verification before publication. The globe image is a static visual background, not a historical satellite layer.";
     }
     if(/predict|future|forecast|توقع|المستقبل|next|2026|2030/.test(q)) {
       const fc=context.forecast;
-      if(!fc?.ok)return "Forecast is not available for these observations. Select a longer, continuous historical period and open AI Forecast for the model's validation details.";
+      if(!fc?.ok)return "Forecast is not available for these observations. Select a longer, continuous historical period and open Prediction Lab for the model's validation details.";
       const quality=fc.validated?"passed":"did not beat";
-      return "Exploratory autoregressive ML estimate for "+fc.prediction.year+" at "+regionName(d1)+": "+fmt(fc.prediction.value)+" "+u+". The model "+quality+" the naive persistence baseline on "+fc.holdout+" held-out one-year predictions (RMSE "+fmt(fc.rmse)+" vs "+fmt(fc.naive)+"). This does NOT predict specific disasters or weather events; projections beyond one year are not separately validated.";
+      return "Exploratory autoregressive ML estimate for "+fc.prediction.year+" at "+regionName(d1)+": "+fmt(fc.prediction.value)+" "+u+". The model "+quality+" the naive persistence baseline on "+fc.holdout+" held-out "+fc.horizon+"-year predictions (RMSE "+fmt(fc.rmse)+" vs "+fmt(fc.naive)+"). This does NOT predict specific disasters or weather events; results are evaluated at the selected horizon and remain experimental.";
     }
     if(/signif|p.value|mann|statist|دلال|احصائ|إحصائ/.test(q)) {
       return "The Trends / Insights area shows exploratory Mann–Kendall p-values for the selected annual series. Its usual independence assumption matters: if serial correlation is appreciable, p-values should not be interpreted as reliable evidence. This is a preliminary trend diagnostic, not proof of climate causation.";
@@ -140,7 +135,9 @@
     });
     window.addEventListener("earth:data-updated",()=>{
       const c=window.EarthData?.getCurrent?.();
-      if(!c?.loaded)return;
+      if(!c?.loaded){
+        [1,2].forEach(i=>{const marker=$("globe-inspect-"+i);if(marker)marker.textContent="Waiting for verified NASA observations";});return;
+      }
       const variable=$("environment-variable").value;
       const mode=$("comparison-mode").value;
       const startYear=Number($("start-year").value),endYear=Number($("end-year").value);

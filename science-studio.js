@@ -110,7 +110,7 @@
    });
    root.append(dom("h3","report-heading","SOURCE & LIMITATIONS"));
    root.append(dom("p","report-small",
-     "NASA POWER monthly meteorological point products, aggregated into complete calendar-year summaries. "+
+     "NASA POWER daily UTC meteorological point products, aggregated into complete calendar-year summaries. "+
      "These are point estimates, not administrative-region means. Mann–Kendall significance is exploratory "+
      "and unadjusted for serial correlation. Autoregressive ridge forecasts were evaluated using "+
      "rolling-origin historical holdouts at the selected 1, 3 or 5-year horizon. Prediction "+

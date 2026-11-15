@@ -4,9 +4,9 @@
 (() => {
 "use strict";
 const $=id=>document.getElementById(id);
-const API="https://power.larc.nasa.gov/api/temporal/monthly/point";
-const CODES={temperature:"T2M",precipitation:"PRECTOTCORR",humidity:"RH2M",wind:"WS2M"};
-const UNITS={temperature:"°C",precipitation:"mm/year",humidity:"%",wind:"m/s"};
+const API="https://power.larc.nasa.gov/api/temporal/daily/point";
+const CODES=Object.fromEntries(Object.entries(window.EarthDataCore.variables).map(([k,v])=>[k,v.code]));
+const UNITS=Object.fromEntries(Object.entries(window.EarthDataCore.variables).map(([k,v])=>[k,v.unit]));
 const cache=new Map();
 let activeToken=0,overlays={};
 const days=(y,m)=>new Date(Date.UTC(y,m,0)).getUTCDate();
@@ -47,21 +47,17 @@ function clearHeat(){
  status("Heat layers cleared. Choose Earth 01, Earth 02 or BOTH.");
 }
 function getAnnual(raw,year,v){
- const monthly=raw?.properties?.parameter?.[CODES[v]];
- if(!monthly)return null;
- let sum=0,daysTotal=0,count=0;
- for(let m=1;m<=12;m++){
-   const x=monthly[year+String(m).padStart(2,"0")];
-   if(!valid(x))continue;
-   const d=days(year,m);sum+=x*d;daysTotal+=d;count++;
+ const values=raw?.properties?.parameter?.[CODES[v]];if(!values)return null;
+ let sum=0,count=0;for(let m=1;m<=12;m++)for(let d=1;d<=days(year,m);d++){
+   const value=values[String(year)+String(m).padStart(2,"0")+String(d).padStart(2,"0")];
+   if(!window.EarthDataCore.valid(value))return null;sum+=value;count++;
  }
- if(count!==12)return null;
- return v==="precipitation"?sum:sum/daysTotal;
+ return v==="precipitation"?sum:sum/count;
 }
 async function sample(lat,lng,year,variable){
  const key=[lat.toFixed(4),lng.toFixed(4),year,variable].join("|");
  if(cache.has(key))return cache.get(key);
- const p=new URLSearchParams({parameters:CODES[variable],community:"AG",latitude:String(lat),longitude:String(lng),start:String(year),end:String(year),format:"JSON"});
+ const p=new URLSearchParams({parameters:CODES[variable],community:"AG",latitude:String(lat),longitude:String(lng),start:year+"0101",end:year+"1231",format:"JSON","time-standard":"UTC"});
  const promise=fetch(API+"?"+p,{mode:"cors",signal:AbortSignal.timeout(10000)}).then(async response=>{
    if(!response.ok)throw new Error("NASA HTTP "+response.status);
    return getAnnual(await response.json(),year,variable);
@@ -151,7 +147,7 @@ async function render(){
  const ids=value==="both"?["region1","region2"]:[value];
  const year=Number($("timeline-year").value);
  const variable=$("environment-variable").value;
- if(!Number.isInteger(year)||year<1981||year>2025||$("timeline-year").disabled){
+ if(!Number.isInteger(year)||year<1981||year>2025||!window.EarthData?.getCurrent?.().loaded){
    status("Load NASA observations and select a valid year first.",true);return;
  }
  const token=++activeToken;

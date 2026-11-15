@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="earth-build" content="20261115-role-modes-1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Earth Trend Detective | Mission Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
@@ -313,6 +314,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
   .globe-grid .globe{min-height:230px}
 }
 </style>
+<link rel="stylesheet" href="role-modes.css?v=20261115-role-modes-1">
 </head>
 <body>
 <div class="dashboard" data-active-view="overview">
@@ -324,7 +326,6 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
       <button type="button" class="navbutton active" data-view="overview" aria-pressed="true"><span class="symbol">◈</span> Overview</button>
       <button type="button" class="navbutton" data-view="trends" aria-pressed="false"><span class="symbol">⌁</span> Trends</button>
       <button type="button" class="navbutton" data-view="insights" aria-pressed="false"><span class="symbol">✧</span> Insights</button>
-      <button type="button" class="navbutton" data-view="forecast" aria-pressed="false"><span class="symbol">✦</span> AI Forecast</button>
       <button type="button" class="navbutton" data-view="prediction-lab" aria-pressed="false"><span class="symbol">◷</span> Prediction Lab</button>
       <button type="button" class="navbutton" data-view="reports" aria-pressed="false"><span class="symbol">▤</span> Report Studio</button>
       <button type="button" class="navbutton" data-view="assistant" aria-pressed="false"><span class="symbol">◉</span> Ask AI</button>
@@ -424,7 +425,6 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
         <div class="tab-row" role="group" aria-label="Analysis panels">
           <button type="button" data-tab="trends" aria-pressed="false">Trends</button>
           <button type="button" data-tab="insights" aria-pressed="false">Insights</button>
-          <button type="button" data-tab="forecast" aria-pressed="false">Forecast</button>
         </div>
         <div class="tab-body" id="panel-trends" hidden>
           <div class="chart-box" id="chart-container"><div id="chart-empty"><div class="visual">⌁</div><strong>Historical Trend Comparison</strong><p>Loading verified observations from NASA POWER, or select Refresh to retry.</p></div><canvas id="nasa-trend-chart" hidden></canvas></div>
@@ -434,16 +434,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
         <div class="tab-body" id="panel-insights" hidden>
           <div class="info-list" id="insight-content"><strong>Scientific Insights</strong><p>Waiting for verified NASA POWER observations.</p></div>
         </div>
-        <div class="tab-body" id="panel-forecast" hidden>
-          <div class="info-list">
-            <strong>AI-assisted Time-Series Forecast</strong>
-            <p>Experimental autoregressive machine-learning model trained on annual NASA POWER point data and evaluated on held-out years.</p>
-            <label class="side-label" for="forecast-horizon">Forecast horizon</label>
-            <select id="forecast-horizon"><option value="1">1 year</option><option value="3">3 years</option><option value="5">5 years</option></select>
-            <div id="forecast-output" class="forecast-output">Awaiting validated data.</div>
-            <p class="forecast-caution">Model estimates, not NASA predictions. Climate scenarios, extremes and external drivers are not represented.</p>
-          </div>
-        </div>
+
       </section>
     </div>
         <section class="ask-ai-workspace panel" id="ask-ai-workspace" hidden aria-label="Ask AI data assistant">
@@ -465,10 +456,18 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
     <section class="studio-page panel" id="prediction-lab-page" hidden aria-label="AI Prediction Lab">
       <div class="studio-topline"><span>◉ PREDICTIVE INTELLIGENCE / SCIENCE LAB</span><strong>MODEL EVALUATION</strong></div>
       <div class="studio-heading"><h2>AI Prediction Lab</h2><p>NASA POWER observed history vs experimentally modelled future · purple / cyan comparison</p></div>
+          <div class="info-list legacy-forecast">
+            <strong>AI-assisted Time-Series Forecast</strong>
+            <p>Experimental autoregressive machine-learning model trained on annual NASA POWER point data and evaluated on held-out years.</p>
+            <label class="side-label" for="forecast-horizon">Forecast horizon</label>
+            <select id="forecast-horizon"><option value="1">1 year</option><option value="3">3 years</option><option value="5">5 years</option></select>
+            <div id="forecast-output" class="forecast-output">Awaiting validated data.</div>
+            <p class="forecast-caution">Model estimates, not NASA predictions. Climate scenarios, extremes and external drivers are not represented.</p>
+          </div>
       <div class="lab-results" id="lab-results"></div>
       <div class="lab-chart-frame"><canvas id="lab-chart"></canvas></div>
       <div class="studio-note" id="lab-message">Waiting for NASA observations.</div>
-      <p class="studio-science-warning">The model is autoregressive ridge regression. Holdout RMSE describes one-year-ahead evaluation, not calibrated prediction uncertainty. Future values are estimates and are not NASA forecasts.</p>
+      <p class="studio-science-warning">The model is autoregressive ridge regression. Holdout RMSE evaluates the selected forecast horizon, not calibrated prediction uncertainty. Future values are estimates and are not NASA forecasts.</p>
     </section>
     <section class="studio-page panel" id="report-studio-page" hidden aria-label="Environmental report studio">
       <div class="studio-topline"><span>◉ EARTH OBSERVATION / RESULTS EXPORT</span><strong>RESEARCH OUTPUT</strong></div>
@@ -530,6 +529,7 @@ changeRegion("region1", earth1);
 changeRegion("region2", earth2);
 
 function switchPanel(tab) {
+  if(tab === "forecast")tab="prediction-lab";
   const isAnalysisView = ["trends", "insights", "forecast"].includes(tab);
   document.querySelector(".center-column").hidden = tab !== "overview";
   document.querySelector(".insights").hidden = !isAnalysisView;
@@ -539,6 +539,7 @@ function switchPanel(tab) {
   document.querySelector(".content-grid").hidden = tab !== "overview" && !isAnalysisView;
   const dashboard = document.querySelector(".dashboard");
   dashboard.dataset.activeView = tab;
+  history.replaceState(null,"","#"+tab);
   document.querySelectorAll("[data-tab]").forEach(b => {
     const selected = b.dataset.tab === tab;
     b.classList.toggle("active", selected);
@@ -560,6 +561,8 @@ document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click"
   switchPanel(b.dataset.view);
 }));
 
+if(location.hash && ["overview","trends","insights","forecast","prediction-lab","reports","assistant"].includes(location.hash.slice(1)))switchPanel(location.hash.slice(1));
+
 // Keep the 3D Earth sizes aligned with the dashboard panels.
 function resizeEarthPanels() {
   for (const [id, globe] of [["globe1", earth1], ["globe2", earth2]]) {
@@ -577,11 +580,15 @@ for (const id of ["globe1", "globe2"]) {
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="nasa-power.js?v=4c40677d"></script>
-<script src="data-assistant.js?v=cfd27b72"></script>
-<script src="timeline.js?v=046f794e"></script>
-<script src="heatmap.js?v=spatial-patches-2"></script>
-<script src="science-studio.js?v=37553b67"></script>
-<script src="earth-layers.js?v=preview-1"></script>
+<script src="data-core.js?v=20261115-role-modes-1"></script>
+<script src="nasa-power.js?v=20261115-role-modes-1"></script>
+<script src="data-assistant.js?v=20261115-role-modes-1"></script>
+<script src="timeline.js?v=20261115-role-modes-1"></script>
+<script src="heatmap.js?v=20261115-role-modes-1"></script>
+<script src="science-studio.js?v=20261115-role-modes-1"></script>
+<script src="earth-layers.js?v=20261115-role-modes-1"></script>
+<script src="forecast-locales.js?v=20261115-role-modes-1"></script>
+<script src="planning-locales.js?v=20261115-role-modes-1"></script>
+<script src="role-modes.js?v=20261115-role-modes-1"></script>
 </body>
 </html>
