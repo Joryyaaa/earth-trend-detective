@@ -2,7 +2,7 @@
 (() => {
   "use strict";
   const $=id=>document.getElementById(id);
-  const units={temperature:"°C",precipitation:"mm/year",humidity:"%",wind:"m/s"};
+  const units=Object.fromEntries(Object.entries(window.EarthDataCore.variables).map(([k,v])=>[k,v.unit]));
   let timer=null, activeYear=null, lastKey="";
   const format=(n)=>Number.isFinite(n)?n.toLocaleString("en-US",{maximumFractionDigits:2}):"No observation";
   function stop(){
