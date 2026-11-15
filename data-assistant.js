@@ -20,6 +20,7 @@
     return den?rows.reduce((s,x)=>s+(x[0]-mx)*(x[1]-my),0)/den:null;
   };
   function report(q) {
+    if(window.PlatformI18n&&window.PlatformI18n.language!=='en')return window.PlatformI18n.answer(q);
     const context=window.EarthData?.getCurrent?.();
     if(!context || !context.loaded) return "I need verified NASA POWER observations first. Select two points and use Refresh NASA observations. I won't invent values.";
     const v=$("environment-variable").value;
@@ -91,6 +92,7 @@
     if(!log)return;
     const p=document.createElement("div");
     p.className="assistant-bubble "+kind;
+    if(kind==='assistant'&&!log.lastElementChild&&window.PlatformI18n)text=window.PlatformI18n.t('question')+' · NASA POWER';
     p.textContent=text;log.appendChild(p);
     log.scrollTop=log.scrollHeight;
   }

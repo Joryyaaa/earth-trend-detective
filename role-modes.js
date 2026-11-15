@@ -6,12 +6,13 @@ const roles=['public','farmer','engineer','student','scientist','researcher','sp
 const ages=['','child','teen','adult','senior'];
 let saved={};try{saved=JSON.parse(localStorage.getItem('earth-forecast-preferences')||'{}');}catch{}
 const settings={language:packs[saved.language]?saved.language:'ar',role:roles.includes(saved.role)?saved.role:'public',age:ages.includes(saved.age)?saved.age:'',style:['simple','scientific'].includes(saved.style)?saved.style:'simple'};
+settings.target=['region1','region2','both'].includes(saved.target)?saved.target:'region1';settings.allFactors=saved.allFactors===true;
 let speechGeneration=0,voiceList=[],speaking=false,paused=false,reportText='',planningReport='',exportData=null;
 const farmInputs={crop:'',minimum:'',maximum:'',kc:'',efficiency:'',effective:''};
 const synth=window.speechSynthesis;
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
 function text(key){return packs[settings.language].text[key];}
-function number(value,digits=2){return Number.isFinite(value)?new Intl.NumberFormat(settings.language,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(value):text('unavailable');}
+function number(value,digits=(['child','teen','senior'].includes(settings.age)?1:2)){return Number.isFinite(value)?new Intl.NumberFormat(settings.language,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(value):text('unavailable');}
 function persist(){try{localStorage.setItem('earth-forecast-preferences',JSON.stringify(settings));}catch{}}
 function current(){const c=window.EarthData?.getCurrent?.();return c?.loaded&&c.analyses?c:null;}
 function stop(){speechGeneration++;if(synth)synth.cancel();speaking=false;paused=false;audioState();}
@@ -40,11 +41,33 @@ function speak(){
   u.onend=next;u.onerror=()=>{if(generation!==speechGeneration)return;stop();$('rm-voice-note').textContent=text('noVoice');};synth.speak(u);
  };next();
 }
+function selectForecast(){
+ stop();const target=$('rm-target').value;
+ if(target.startsWith('point:')){
+  const select=$('region1');select.value=target.slice(6);settings.target='region1';persist();select.dispatchEvent(new Event('change',{bubbles:true}));
+ }else{settings.target=target;persist();render();}
+ window.dispatchEvent(new Event('earth:forecast-selection'));
+}
+function selectionControls(root){
+ const fields=el('div','rm-fields rm-selection');
+ for(const key of ['target','factor']){
+  const label=el('label'),span=el('span');span.id='rm-label-'+key;const select=el('select');select.id='rm-'+key;
+  label.append(span,select);fields.append(label);
+ }
+ root.append(fields);
+ // Bind after insertion because this root is not connected yet.
+ fields.querySelector('#rm-target').addEventListener('change',selectForecast);
+ fields.querySelector('#rm-factor').addEventListener('change',()=>{
+  const value=$('rm-factor').value;settings.allFactors=value==='all';persist();
+  if(value!=='all'){$('environment-variable').value=value;$('environment-variable').dispatchEvent(new Event('change',{bubbles:true}));}else render();
+  window.dispatchEvent(new Event('earth:forecast-selection'));
+ });
+}
 function build(){
  const root=el('section','role-modes');root.id='role-modes';root.setAttribute('aria-label','Forecast role modes');
  const top=el('div','rm-top');const title=el('h3');title.id='rm-title';top.append(title);
  const modes=el('div','rm-controls');for(const style of ['simple','scientific']){const b=el('button');b.type='button';b.id='rm-'+style;b.addEventListener('click',()=>{settings.style=style;persist();render();});modes.append(b);}top.append(modes);root.append(top);
- const fields=el('div','rm-fields');for(const key of ['role','age','language']){const label=el('label');const caption=el('span');caption.id='rm-label-'+key;const select=el('select');select.id='rm-'+key;select.addEventListener('change',()=>{settings[key]=select.value;persist();render();});label.append(caption,select);if(key==='language'){label.className='forecast-language';document.querySelector('.topbar').append(label);}else fields.append(label);}root.append(fields);
+ const fields=el('div','rm-fields');for(const key of ['role','age','language']){const label=el('label');const caption=el('span');caption.id='rm-label-'+key;const select=el('select');select.id='rm-'+key;select.addEventListener('change',()=>{settings[key]=select.value;persist();render();});label.append(caption,select);if(key==='language'){label.className='forecast-language';document.querySelector('.topbar').append(label);}else fields.append(label);}root.append(fields);selectionControls(root);
  const results=el('div','rm-results');results.id='rm-results';results.setAttribute('aria-live','polite');root.append(results);
  const advice=el('div','rm-advice');advice.id='rm-advice';root.append(advice);
  const domain=el('div');domain.id='rm-domain';root.append(domain);
@@ -64,7 +87,7 @@ function build(){
 function table(headers,rows){const wrap=el('div','rm-table-wrap'),t=el('table'),head=el('thead'),tr=el('tr');for(const h of headers){const th=el('th','',h);th.scope='col';tr.append(th);}head.append(tr);const body=el('tbody');for(const row of rows){const r=el('tr');for(const value of row)r.append(el('td','',String(value)));body.append(r);}t.append(head,body);wrap.append(t);return wrap;}
 function planner(c){
  const domain=$('rm-domain');domain.replaceChildren();planningReport='';if(settings.role!=='farmer'||!c)return;
- const details=el('details');details.append(el('summary','',text('planning')));
+ const details=el('details');details.open=true;details.append(el('summary','',text('planning')));
  details.append(el('p','rm-subtle',text('planningCaution')));
  const form=el('form','rm-farm-fields');
  const labels={crop:text('crop'),minimum:text('minimum')+' · °C',maximum:text('maximum')+' · °C',kc:'Kc · 0–2',efficiency:text('efficiency'),effective:text('effective')};
@@ -103,11 +126,18 @@ function planner(c){
 }
 function stat(title,value,year){const node=el('div');node.append(el('span','',title),el('b','',value),el('small','',String(year)));return node;}
 function render(){
- stop();const pack=packs[settings.language],root=$('role-modes');root.lang=settings.language;root.dir=pack.dir;root.dataset.age=settings.age;
- $('rm-title').textContent=text('title');for(const key of ['role','age','language'])$('rm-label-'+key).textContent=text(key)+(key==='language'?' · 40':'');
+ stop();window.PlatformI18n?.setLanguage(settings.language);const pack=packs[settings.language],root=$('role-modes');root.lang=settings.language;root.dir=pack.dir;root.dataset.age=settings.age;root.setAttribute('aria-label',text('title'));
+ $('rm-title').textContent=text('title');
+ const i18n=window.PlatformI18n,variableKeys={maximumTemperature:'maximum',minimumTemperature:'minimum',solarIrradiance:'solar'};
+ $('rm-label-target').textContent=i18n.t('earth');$('rm-label-factor').textContent=i18n.t('factor');
+ const temporal=$('comparison-mode').value==='periods';if(temporal)settings.target='region1';
+ const locations=['region1','region2'].map((id,index)=>new Option(i18n.t('earth')+' 0'+(index+1)+' · '+$(id).selectedOptions[0].textContent,id));
+ $('rm-target').replaceChildren(...locations,new Option(i18n.t('both'),'both'),...[...$('region1').options].map(option=>new Option(option.textContent,'point:'+option.value)));$('rm-target').value=settings.target;for(const option of $('rm-target').options)option.disabled=temporal&&['region2','both'].includes(option.value);
+ $('rm-factor').replaceChildren(...Object.keys(core.variables).map(key=>new Option(i18n.t(variableKeys[key]||key)+' · '+core.variables[key].unit,key)),new Option(window.PlatformAllLabels[settings.language],'all'));$('rm-factor').value=settings.allFactors?'all':$('environment-variable').value;
+for(const key of ['role','age','language'])$('rm-label-'+key).textContent=text(key)+(key==='language'?' · 40':'');
  document.querySelector('.forecast-language').lang=settings.language;document.querySelector('.forecast-language').dir=pack.dir;
  const horizon=$('forecast-horizon');document.querySelector('label[for="forecast-horizon"]').textContent=text('estimate')+' · '+text('years');
- for(const option of horizon.options)option.textContent=option.value+' '+text('years');
+ for(const option of horizon.options)option.textContent=option.value+' · '+text('years');
  $('rm-role').replaceChildren(...roles.map(r=>new Option(pack.roles[r],r)));$('rm-role').value=settings.role;
  $('rm-age').replaceChildren(new Option(text('optional'),''),...pack.ages.map((a,i)=>new Option(a,ages[i+1])));$('rm-age').value=settings.age;
  $('rm-language').replaceChildren(...Object.entries(packs).map(([code,p])=>new Option(p.name,code)));$('rm-language').value=settings.language;
@@ -119,12 +149,18 @@ function render(){
  advice.append(el('h4','',pack.roles[settings.role]),el('p','',pack.advice[settings.role]));
  if(['child','teen'].includes(settings.age))advice.append(el('p','',pack.child));if(settings.age==='senior')advice.append(el('p','',pack.senior));
  $('rm-export').disabled=!c;exportData=null;planningReport='';$('rm-domain').replaceChildren();reportText=pack.text.title+'\n'+pack.roles[settings.role]+'\n'+pack.advice[settings.role];
+ window.PlatformI18n?.setLanguage(settings.language);
  if(!c){results.append(el('p','rm-unavailable',text('unavailable')+' · NASA POWER'));populateVoice();return;}
- const a=c.analyses,meta=core.variables[a.variable],regions=a.temporal?[c.locations[0]]:c.locations;
+ window.PlatformI18n?.setLanguage(settings.language);
+ const base=c.analyses;
+ const regions=c.locations.map((region,index)=>({region,index})).filter(({index})=>base.temporal?index===0:settings.target==='both'||index===(settings.target==='region2'?1:0));
  const reportSections=[];
- regions.forEach((region,i)=>{
-  const card=el('article','rm-region'),heading=el('h4','',region.loc.name);heading.dir='auto';card.append(heading);
-  const f=c.forecastResults?.[i]?.result;
+ for(const variable of settings.allFactors?Object.keys(core.variables):[base.variable]){
+ const a={...base,variable},meta=core.variables[variable];
+ regions.forEach(({region,index:i})=>{
+  const card=el('article','rm-region'),heading=el('h4','',region.loc.name);heading.dir='auto';card.append(heading,el('p','rm-factor-name',window.PlatformI18n.t(({maximumTemperature:'maximum',minimumTemperature:'minimum',solarIrradiance:'solar'})[variable]||variable)+' · '+meta.code));
+  card.dataset.variable=variable;card.dataset.location=String(i);
+  const f=window.EarthData.forecastFor(variable,i);
   const yearly=Object.keys(region.data).filter(y=>/^\d{4}$/.test(y)&&+y>=a.start&&+y<=a.end&&Number.isFinite(region.data[y][a.variable])).map(Number);
   const lastYear=yearly.at(-1),lastValue=region.data[lastYear]?.[a.variable];
   const numeric=el('div','rm-numbers');numeric.append(stat(text('observed'),number(lastValue)+' '+meta.unit,lastYear||'—'));
@@ -132,7 +168,7 @@ function render(){
   if(f?.ok)card.append(el('p','rm-subtle',text('change')+': '+number(f.prediction.value-lastValue)+' '+meta.unit));
   const quality=el('p','rm-quality',f?.ok?text(f.validated?'passed':'failed'):text('unavailable'));quality.dataset.quality=f?.ok&&f.validated?'passed':'failed';card.append(quality);
   const details=el('details');details.open=settings.style==='scientific';details.append(el('summary','',text('scientific')+' · '+meta.code));
-  if(f?.ok){details.append(el('p','rm-subtle','AR(2) ridge · '+a.start+'–'+a.end+' · h='+f.horizon+' · n='+f.holdout),el('p','rm-subtle','RMSE(AR) '+number(f.rmse)+' '+meta.unit+' / RMSE(persistence) '+number(f.naive)+' '+meta.unit));
+  if(f?.ok){details.append(el('p','rm-subtle','AR(2) ridge · '+yearly[0]+'–'+lastYear+' · h='+f.horizon+' · n='+f.holdout),el('p','rm-subtle','RMSE(AR) '+number(f.rmse)+' '+meta.unit+' / RMSE(persistence) '+number(f.naive)+' '+meta.unit));
    details.append(table([text('years'),text('estimate')+' · '+meta.unit],f.predictions.map(p=>[p.year,number(p.value)])));
   }
   details.append(table([text('years'),text('observed')+' · '+meta.unit],yearly.slice(-5).map(y=>[y,number(region.data[y][a.variable])])));card.append(details);
@@ -147,14 +183,17 @@ function render(){
    const heat=region.data._quality?.[lastYear]?.maximumTemperature;
    if(heat?.observed===heat?.expected){card.append(el('p','rm-subtle',text('observed')+' · '+lastYear+' · T2M_MAX(max) '+number(heat.maximum)+' °C · n(T2M_MAX >35°C) '+heat.daysAbove35+'/'+heat.expected));}
   }
-  reportSections.push({location:region.loc,variable:meta,period:[a.start,a.end],lastObservation:{year:lastYear,value:lastValue},forecast:f,seasonal:season,source:provenance});
+  const tailored=window.RoleEvidence?.render(card,region,a,f,settings.role,settings.age);
+  if(tailored)reportText+='\n'+card.querySelector('.rm-evidence').innerText;
+  reportSections.push({tailored,location:region.loc,variable:meta,period:[a.start,a.end],lastObservation:{year:lastYear,value:lastValue},forecast:f,seasonal:season,source:provenance});
   reportText+='\n\n'+region.loc.name+'\n'+text('observed')+' '+lastYear+': '+number(lastValue)+' '+meta.unit+'\n'+text('estimate')+': '+(f?.ok?f.prediction.year+' · '+number(f.prediction.value)+' '+meta.unit+'\n'+text(f.validated?'passed':'failed')+' · RMSE '+number(f.rmse):text('unavailable'));
   results.append(card);
  });
- reportText+='\n\n'+text('caution')+'\n'+text('source')+': NASA POWER daily UTC · '+a.start+'–'+a.end;
+ }
+ reportText+='\n\n'+text('caution')+'\n'+text('source')+': NASA POWER daily UTC · '+base.start+'–'+base.end;
  if(['child','teen'].includes(settings.age))reportText+='\n'+pack.child;if(settings.age==='senior')reportText+='\n'+pack.senior;
- exportData={generatedAt:new Date().toISOString(),language:settings.language,role:settings.role,age:settings.age,explanation:reportText,sections:reportSections};
- planner(c);populateVoice();window.dispatchEvent(new Event('earth:role-rendered'));
+ exportData={selection:{target:settings.target,factors:settings.allFactors?'all':base.variable},generatedAt:new Date().toISOString(),language:settings.language,role:settings.role,age:settings.age,explanation:reportText,sections:reportSections};
+ planner({...c,locations:regions.map(r=>r.region)});populateVoice();window.dispatchEvent(new Event('earth:role-rendered'));
 }
 function download(){if(!current()||!exportData)return;const research=['researcher','scientist','farmer'].includes(settings.role);const blob=new Blob([research?JSON.stringify(exportData,null,2):reportText+'\n\n'+JSON.stringify(exportData.sections.map(s=>({location:s.location,period:s.period,source:s.source})),null,2)],{type:research?'application/json;charset=utf-8':'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob),anchor=el('a');anchor.href=url;anchor.download='earth-forecast-'+settings.role+'-'+settings.language+(research?'.json':'.txt');anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function bind(){
