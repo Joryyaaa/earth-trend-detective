@@ -31,7 +31,16 @@ Interactive checks cover language/role changes, audio controls, calculations and
 
 Experimental estimates are not NASA predictions. RMSE is not a calibrated prediction interval.
 Point data are not citywide averages. Ask AI remains rule-based, not an LLM.
-40 languages cover the added role output and planner; original scientific interface still contains English.
+40 offline language vocabularies now cover navigation, controls, observation summaries, charts, Prediction Lab, guided assistant output and exported reports. Scientific identifiers, units and proper names retain their notation.
 Translations need native-language review before public release. Voice coverage depends on browser/device;
 no substitute-language voice is used. No disaster prediction or crop optimization is claimed.
 No other NASA collections from the research have been silently represented as downloaded.
+
+
+## Global language and role evidence update
+
+Build `20261115-platform-roles-2` extends the header selector across all views. Role-specific evidence is calculated from the same NASA observations: seasonal wet/dry months for farmers, observed heat peaks and days above 35°C for engineers, structured student reports, and sample completeness / model backtests for scientific roles. Age groups change presentation precision, comparison windows and explanatory detail, never the fitted forecast. Farmer inputs remain explicit and historical scenarios are not operational crop prescriptions.
+
+Additional checks: `node tests/personalization.cjs` verifies all 40 dictionaries and scientific disclosures, 35 role/age combinations, invariant forecast values, and actual Tabuk heat and seasonal metrics. Browser checks cover all 40 switches, Arabic/French report and chat updates, 1/3/5-year horizons, mobile layout, and downloaded HTML/JSON reports. No translation API is called at runtime. Native-speaker review is still recommended.
+
+Prediction Lab also includes its own location and factor selectors. Select one of the two loaded points, both points, or load a supported city into Earth 01; choose one of seven variables or all seven. Every displayed variable uses the same existing autoregressive model and separate horizon-specific validation with physical-value guards. All-indicator mode is a set of independent forecasts, not a claim of comprehensive hazard prediction.

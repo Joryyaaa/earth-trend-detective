@@ -25,11 +25,13 @@
    const c=context();
    root.replaceChildren();
    if(predictionChart){predictionChart.destroy();predictionChart=null;}
-   if(!c){heading.textContent="Connect NASA POWER observations to analyze the selected regions.";return;}
+   if(!c){heading.textContent=window.PlatformI18n?.t("loading")||"Connect NASA POWER observations to analyze the selected regions.";return;}
    const {state,analysis:a,unit,label}=c;
-   heading.textContent=label+" · historical data "+a.start+"–"+a.end+" · "+(a.temporal?"one point":"two point locations");
-   const candidates=a.temporal?[state.locations[0]]:state.locations;
-   const results=state.forecastResults||[];
+   heading.textContent=window.PlatformI18n?window.PlatformI18n.t("factor")+" · "+window.EarthDataCore.variables[a.variable].code+" · "+window.PlatformI18n.t("observed")+" / "+window.PlatformI18n.t("estimate")+" · "+a.start+"–"+a.end:label+" · historical data "+a.start+"–"+a.end;
+   const target=$('rm-target')?.value||'region1';
+   const indices=a.temporal?[0]:target==='both'?[0,1]:[target==='region2'?1:0];
+   const candidates=indices.map(index=>state.locations[index]);
+   const results=indices.map(index=>state.forecastResults?.[index]);
    for(let i=0;i<candidates.length;i++){
      const region=candidates[i],f=results[i]?.result;
      const card=dom("article","lab-region-card");
@@ -118,15 +120,15 @@
      "satellite measurement. Source: https://power.larc.nasa.gov/"));
  }
  function printReport(){
-   report();
+   report();window.PlatformI18n?.apply();
    if(!context())return;
    window.print();
  }
  function exportReport(){
-   report();if(!context())return;
+   report();window.PlatformI18n?.apply();if(!context())return;
    const root=$("report-preview");
    const stylesheet="<style>body{font:15px Arial;background:#fff;color:#18213d;margin:35px;line-height:1.7}h2{font-size:28px}section{border-top:1px solid #dce4f0;margin:20px 0;padding:8px}.report-row{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid #e8e9f1;padding:6px 0}.report-kicker{color:#6358a2}.report-small{font-size:12px;color:#4f5b78}</style>";
-   const payload='<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Earth System Detective Report</title>'+stylesheet+'</head><body>'+root.innerHTML+'</body></html>';
+   const payload='<!doctype html><html lang="'+document.documentElement.lang+'" dir="'+document.documentElement.dir+'"><head><meta charset="utf-8"><title>Earth System Detective Report</title>'+stylesheet+'</head><body>'+root.innerHTML+'</body></html>';
    const blob=new Blob([payload],{type:"text/html;charset=utf-8"});
    const url=URL.createObjectURL(blob);
    const anchor=document.createElement("a");
@@ -140,6 +142,7 @@
    $("report-export")?.addEventListener("click",exportReport);
    $("forecast-horizon")?.addEventListener("change",()=>{prediction();report();});
    window.addEventListener("earth:data-updated",()=>{prediction();report();});
+   window.addEventListener("earth:forecast-selection",prediction);
    document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{
      if(b.dataset.view==="prediction-lab")prediction();
      if(b.dataset.view==="reports")report();

@@ -337,7 +337,17 @@
     message("NASA POWER loaded · "+p1.length+" / "+p2.length+" yearly values · "+(active.some(r=>r.data._source.kind==="verified-snapshot")?"verified saved snapshot · retrieval date in Source":"daily UTC"));
     window.dispatchEvent(new Event("earth:data-updated"));
   }
-  window.EarthData={getCurrent:()=>({loaded:Boolean(active)&&Boolean(window.__earthAnalyses),locations:active,forecast:window.__earthForecast,forecastResults:window.__earthForecastResults,analyses:window.__earthAnalyses})};
+  // Reuse the original fitted model, chronological evaluation and physical guards.
+  const forecastCache=new WeakMap();
+  function forecastFor(variable,index=0){
+    const a=window.__earthAnalyses,region=active?.[index];
+    if(!a||!region||!vars[variable])return {ok:false,message:'No verified data loaded.'};
+    let cache=forecastCache.get(region.data);if(!cache){cache=new Map();forecastCache.set(region.data,cache);}
+    const horizon=Number($("forecast-horizon").value),key=[variable,a.start,a.end,horizon].join(':');
+    if(!cache.has(key))cache.set(key,checkedForecast(sample(region,variable,a.start,a.end),horizon,variable));
+    return cache.get(key);
+  }
+  window.EarthData={forecastFor,getCurrent:()=>({loaded:Boolean(active)&&Boolean(window.__earthAnalyses),locations:active,forecast:window.__earthForecast,forecastResults:window.__earthForecastResults,analyses:window.__earthAnalyses})};
   async function load(force=false){
     const seq=++requestSequence;
     $("load-nasa-data").disabled=true;

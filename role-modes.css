@@ -31,3 +31,14 @@
 @media(max-width:650px){.role-modes{padding:14px}.role-modes .rm-fields,.rm-farm-fields{grid-template-columns:1fr}.rm-numbers b{font-size:23px}.rm-audio button{flex:1;min-width:95px}}
 @media(prefers-reduced-motion:reduce){.role-modes *{scroll-behavior:auto;animation:none!important;transition:none!important}}
 @media print{.rm-fields,.rm-controls,.rm-audio{display:none!important}}
+
+/* Global language direction keeps the established globe layout and palette. */
+html[dir=rtl] .sidebar,html[dir=rtl] .workspace{text-align:start}
+html[dir=rtl] .navbutton{direction:rtl}
+.rm-evidence{border-top:1px solid #ffffff20;margin-top:18px;padding-top:14px}
+.rm-evidence h5{font-size:14px;color:#cfc0ff;margin:14px 0 8px}
+.rm-evidence-grid{display:grid;grid-template-columns:minmax(100px,1fr) minmax(80px,1.3fr);gap:8px;font-size:13px}
+.rm-evidence-grid dt{color:#aab8d7}.rm-evidence-grid dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.rm-evidence ol{padding-inline-start:22px;line-height:1.85}.rm-evidence li{margin:7px 0}
+.role-modes[data-age=child] .rm-evidence{font-size:16px}.role-modes[data-age=senior] .rm-evidence{font-size:18px;line-height:1.9}
+.rm-age-explanation{background:#b49aff12;padding:12px;border-radius:8px}
