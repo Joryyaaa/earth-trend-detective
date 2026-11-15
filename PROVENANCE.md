@@ -18,8 +18,9 @@ No numbers from that document were blindly imported.
 Raw NASA JSON and derived annual/monthly/quality summaries are included under data/ for:
 Tabuk 28.3838,36.5662; New York 40.7,-74; Madinah 24.4709,39.6122.
 Each derived file records retrieval time, source URL, API metadata, coordinates, raw filename,
-and SHA-256 digest. Snapshots are only used when a live request fails or times out and are
-visibly labeled; other locations never borrow a different coordinate's data.
+and SHA-256 digest. Verified historical snapshots load immediately at these three sites and are visibly labeled.
+Refresh explicitly requests live NASA data; failures may fall back to the same coordinate's verified snapshot.
+Other locations never borrow a different coordinate's data.
 
 Forecast model: existing AR(2) ridge with chronological rolling-origin validation for the actual
 selected 1/3/5-year horizon, eight recent targets for a 45-year series. Overlapping multi-year
